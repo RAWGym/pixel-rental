@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, CalendarCheck, Repeat, X as XIcon, MessageCircle, Clock, MapPin, Receipt } from 'lucide-react'
-import { RotateCcw, ChevronRight } from 'lucide-react'
+import { RotateCcw, ChevronRight, FileSignature, Download } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore, useMe } from '../store/store'
 import { useNav, useRoute } from '../store/nav'
 import { Button, IconBtn, Badge, Empty, ProductArt, Segmented, Field, cx, toast, Sheet, haptic } from '../ui/kit'
 import { money, dWithTime, dShort, rangeLabel, daysWord, countdown, wd, hm } from '../lib/format'
-import type { Booking, BookingStatus } from '../data/types'
+import type { Booking, BookingStatus, Contract } from '../data/types'
 
 export const STATUS: Record<BookingStatus, { label: string; tone: 'muted' | 'accent' | 'ok' | 'warn' | 'bad' | 'info' }> = {
   new: { label: 'Ждёт подтверждения', tone: 'warn' }, confirmed: { label: 'Подтверждена', tone: 'info' }, issued: { label: 'У вас', tone: 'accent' },
@@ -141,6 +141,8 @@ export function BookingDetail() {
         </div>
       </div>
 
+      {b.contract?.status === 'signed' && <ContractCard c={b.contract} />}
+
       <div className="grid sm:grid-cols-3 gap-2">
         <Button variant="soft" onClick={repeat}><Repeat className="size-4" /> Повторить</Button>
         {(b.status === 'issued' || b.status === 'confirmed') && <Button variant="soft" onClick={() => { createLead({ type: 'callback', name: me?.name ?? '', phone: me?.phone ?? '', text: `Продлить бронь ${b.code}`, city: b.city }); toast('Запрос на продление отправлен менеджеру') }}><Clock className="size-4" /> Продлить</Button>}
@@ -151,6 +153,22 @@ export function BookingDetail() {
         footer={<div className="flex gap-2"><Button variant="soft" block onClick={() => setConfirmCancel(false)}>Оставить</Button><Button variant="danger" block onClick={() => { cancelMyBooking(b.id); setConfirmCancel(false); toast('Бронь отменена') }}>Отменить бронь</Button></div>}>
         <p className="text-muted">Техника снова станет доступна другим. Если оплатили, вернём деньги тем же способом.</p>
       </Sheet>
+    </div>
+  )
+}
+
+/** Клиент видит, что договор подписан, и может скачать свой акт выдачи */
+function ContractCard({ c }: { c: Contract }) {
+  const [busy, setBusy] = useState(false)
+  const get = async () => {
+    setBusy(true)
+    try { const m = await import('../admin/ContractBlock'); await m.actPdf(c, 'download') } catch { toast('Не удалось загрузить акт, попробуйте позже') } finally { setBusy(false) }
+  }
+  return (
+    <div className="rounded-2xl bg-surface p-4 flex items-center gap-3">
+      <span className="size-10 grid place-items-center rounded-xl bg-ok/15 text-ok shrink-0"><FileSignature className="size-5" /></span>
+      <div className="flex-1 min-w-0"><div className="font-semibold">Договор подписан</div><div className="text-xs text-muted tnum">{dShort(c.signedAt)}, {new Date(c.signedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div></div>
+      <Button variant="soft" disabled={busy} onClick={get}><Download className="size-4" />{busy ? '…' : 'Акт'}</Button>
     </div>
   )
 }

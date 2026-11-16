@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { LayoutDashboard, CalendarRange, ClipboardList, Package, Inbox, Users, UserCog, Settings as SettingsI, History, LogOut, ArrowLeft, Lock, Search, MoreHorizontal, Plus, UserPlus, Sun, Moon } from 'lucide-react'
+import { LayoutDashboard, CalendarRange, ClipboardList, Package, Inbox, Users, UserCog, Settings as SettingsI, History, LogOut, ArrowLeft, Lock, Search, MoreHorizontal, Plus, UserPlus, Sun, Moon, PackageCheck } from 'lucide-react'
 import { useStore } from '../store/store'
 import { Logo, cx, Toasts, Button, Badge } from '../ui/kit'
 import type { Permission } from '../data/types'
@@ -15,6 +15,7 @@ import { LeadsAdmin } from './LeadsAdmin'
 import { CustomersAdmin } from './CustomersAdmin'
 import { StaffAdmin } from './StaffAdmin'
 import { SettingsAdmin, AuditAdmin } from './SettingsAdmin'
+import { IssueAdmin } from './IssueAdmin'
 
 import { useAdminNav, type AdminPage } from './adminNav'
 export { useAdminNav, type AdminPage }
@@ -22,6 +23,7 @@ export { useAdminNav, type AdminPage }
 const NAV: { id: AdminPage; label: string; short?: string; icon: any; perm: Permission }[] = [
   { id: 'dashboard', label: 'Сводка', icon: LayoutDashboard, perm: 'dashboard' },
   { id: 'bookings', label: 'Брони', icon: ClipboardList, perm: 'bookings.view' },
+  { id: 'issue', label: 'Выдача', icon: PackageCheck, perm: 'issue' },
   { id: 'calendar', label: 'Шахматка', short: 'Календарь', icon: CalendarRange, perm: 'calendar' },
   { id: 'products', label: 'Товары и наличие', short: 'Товары', icon: Package, perm: 'products.view' },
   { id: 'leads', label: 'Заявки', icon: Inbox, perm: 'leads' },
@@ -96,8 +98,8 @@ export function AdminApp() {
     if (!auth.email || auth.pendingRole || !me) return auth.email && auth.pendingRole ? <StaffPending /> : <StaffLogin />
   } else if (!me) return <Login />
   const allowed = NAV.filter(n => can(n.perm))
-  const badge = (id: AdminPage) => id === 'leads' ? leads.filter(l => l.status === 'new').length : id === 'bookings' ? bookings.filter(b => b.status === 'new').length : 0
-  const Page = { dashboard: Dashboard, bookings: BookingsAdmin, calendar: CalendarAdmin, products: ProductsAdmin, leads: LeadsAdmin, customers: CustomersAdmin, staff: StaffAdmin, settings: SettingsAdmin, audit: AuditAdmin }[page]
+  const badge = (id: AdminPage) => id === 'leads' ? leads.filter(l => l.status === 'new').length : id === 'bookings' ? bookings.filter(b => b.status === 'new').length : id === 'issue' ? bookings.filter(b => b.status === 'issued' && b.end < Date.now()).length : 0
+  const Page = { dashboard: Dashboard, bookings: BookingsAdmin, issue: IssueAdmin, calendar: CalendarAdmin, products: ProductsAdmin, leads: LeadsAdmin, customers: CustomersAdmin, staff: StaffAdmin, settings: SettingsAdmin, audit: AuditAdmin }[page]
 
   const Side = (
     <div className="flex flex-col h-full gap-1 p-3">
@@ -123,7 +125,7 @@ export function AdminApp() {
   )
 
   const initials = me.name.split(' ').map(w => w[0]).slice(0, 2).join('')
-  const top = allowed.filter(n => ['dashboard', 'bookings', 'calendar', 'products', 'leads', 'customers'].includes(n.id))
+  const top = allowed.filter(n => ['dashboard', 'bookings', 'issue', 'calendar', 'products', 'leads', 'customers'].includes(n.id))
   const rest = allowed.filter(n => !top.includes(n))
   const Pill = ({ n }: { n: typeof NAV[number] }) => {
     const on = page === n.id, c = badge(n.id)
@@ -147,7 +149,7 @@ export function AdminApp() {
           <div className="flex items-center gap-2.5 pl-1 pr-2 min-w-0">
             <span className="hidden sm:flex items-center gap-3 min-w-0">
               <Logo className="h-7 w-auto shrink-0" />
-              <span className="hidden xl:block min-w-0 leading-tight border-l border-line pl-3"><span className="block text-sm font-semibold truncate">Админка</span><span className="block text-xs text-muted truncate">{role?.name}</span></span>
+              <span className="hidden min-[1600px]:block min-w-0 leading-tight border-l border-line pl-3"><span className="block text-sm font-semibold truncate">Админка</span><span className="block text-xs text-muted truncate">{role?.name}</span></span>
             </span>
             <Logo className="sm:hidden h-[22px] w-auto shrink-0" sub={false} />
           </div>

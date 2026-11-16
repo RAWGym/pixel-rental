@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import { persist, type PersistStorage, type StorageValue } from 'zustand/middleware'
 import { buildAll } from '../data/seed'
 import { verificationOf } from '../data/types'
-import type { Booking, BookingStatus, CityId, Customer, Lead, Product, Role, Settings, Staff, Unit, AuditEntry, PaymentMethod, Permission } from '../data/types'
+import type { Booking, BookingStatus, CityId, Customer, Lead, Product, Role, Settings, Staff, Unit, AuditEntry, PaymentMethod, Permission, Contract, ContractTemplate, ReturnCheck } from '../data/types'
+import { DEFAULT_TEMPLATES } from '../lib/contract'
 import { calcPrice, rentalDays, DAY } from '../lib/pricing'
 import { freeUnits } from '../lib/availability'
 import { uid } from '../lib/rng'
@@ -107,6 +108,12 @@ interface State extends DB {
   upsertRole: (r: Role) => void
   removeRole: (id: string) => void
   updateSettings: (s: Partial<Settings>) => void
+  /** выдача по подписанному договору (в общей базе — после RPC issue_booking) */
+  issueBooking: (id: string, contract: Contract, unitIds?: Record<string, string[]>) => void
+  /** приёмка с чек-листом */
+  returnBooking: (id: string, check: ReturnCheck, note?: string) => void
+  voidContract: (bookingId: string, reason: string) => void
+  addContractTemplate: (body: string) => ContractTemplate
   resetDemo: () => void
 }
 
@@ -292,13 +299,43 @@ export const useStore = create<State>()(persist((set, get) => ({
   upsertRole: r => { set(s => ({ roles: s.roles.some(x => x.id === r.id) ? s.roles.map(x => x.id === r.id ? r : x) : [...s.roles, r] })); get().log('Роль сохранена', r.name) },
   removeRole: id => set(s => ({ roles: s.roles.filter(r => r.id !== id) })),
   updateSettings: patch => { set(s => ({ settings: { ...s.settings, ...patch } })); get().log('Настройки изменены') },
+  issueBooking: (id, contract, unitIds) => {
+    const s = get()
+    const who = s.staff.find(x => x.id === s.staffId)?.name.split(' ')[0] ?? 'Система'
+    set({ bookings: s.bookings.map(b => b.id !== id ? b : {
+      ...b, status: 'issued', issuedAt: contract.signedAt, contract, managerId: b.managerId ?? s.staffId ?? undefined,
+      items: unitIds ? b.items.map(i => ({ ...i, unitIds: unitIds[i.productId] ?? i.unitIds })) : b.items,
+      history: [...b.history, { at: contract.signedAt, by: who, text: 'Выдана клиенту, договор подписан' }],
+    }) })
+    get().log(contract.verifiedOverride ? 'Выдача по договору (без проверенного профиля — подтвердил сотрудник)' : 'Выдача по договору', contract.code)
+  },
+  returnBooking: (id, check, note) => {
+    const s = get()
+    const who = s.staff.find(x => x.id === s.staffId)?.name.split(' ')[0] ?? 'Система'
+    const b0 = s.bookings.find(b => b.id === id)
+    set({ bookings: s.bookings.map(b => b.id !== id ? b : { ...b, status: 'returned', returnedAt: Date.now(), returnCheck: check, history: [...b.history, { at: Date.now(), by: who, text: 'Возвращена' + (note?.trim() ? `: ${note.trim()}` : '') }] }) })
+    get().log('Приёмка техники', b0?.code)
+  },
+  voidContract: (bookingId, reason) => {
+    const b0 = get().bookings.find(b => b.id === bookingId)
+    set(s => ({ bookings: s.bookings.map(b => b.id === bookingId && b.contract ? { ...b, contract: { ...b.contract, status: 'void', voidReason: reason } } : b) }))
+    get().log(`Договор аннулирован: ${reason}`, b0?.code)
+  },
+  addContractTemplate: body => {
+    const list = get().settings.contractTemplates ?? DEFAULT_TEMPLATES
+    const t: ContractTemplate = { version: Math.max(0, ...list.map(x => x.version)) + 1, body, createdAt: Date.now() }
+    set(s => ({ settings: { ...s.settings, contractTemplates: [...list, t] } }))
+    get().log(`Новая версия договора v${t.version}`)
+    return t
+  },
   resetDemo: () => set({ ...fresh(), cart: [], favorites: [], meId: null, promo: '', range: defaultRange(), viewed: [], compare: [] }),
 }), {
   name: 'pixel-rental-v1',
   storage: debouncedStorage<State>(),
   // v2: в демо-данных появилась история за год — старые сохранения пересоздаём
   // v3: с подключённой базой серверные данные больше не хранятся в браузере — старый кэш сбрасываем
-  version: 3,
+  // v4: роли с правом «Выдача», шаблон договора
+  version: 4,
   migrate: () => ({}) as any,
   // источник правды для броней, клиентов, заявок, товаров и сотрудников — база; в браузере только личное
   partialize: (s: State) => (LIVE_DB

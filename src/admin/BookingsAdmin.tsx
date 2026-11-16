@@ -11,6 +11,7 @@ import { freeUnits } from '../lib/availability'
 import { calcPrice, rentalDays } from '../lib/pricing'
 import { uid } from '../lib/rng'
 import { matchProduct } from '../client/Catalog'
+import { ContractBlock } from './ContractBlock'
 
 export const STATUS_ADMIN: Record<BookingStatus, { label: string; tone: 'muted' | 'accent' | 'ok' | 'warn' | 'bad' | 'info' }> = {
   new: { label: 'Новая', tone: 'warn' }, confirmed: { label: 'Подтверждена', tone: 'info' }, issued: { label: 'Выдана', tone: 'accent' }, returned: { label: 'Возвращена', tone: 'ok' }, cancelled: { label: 'Отменена', tone: 'muted' },
@@ -92,7 +93,7 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
     <Sheet open={!!id} onClose={onClose} wide title={<span className="flex items-center gap-3"><span className="tnum">{b.code}</span>{od ? <Badge tone="bad">Просрочена</Badge> : <Badge tone={STATUS_ADMIN[b.status].tone}>{STATUS_ADMIN[b.status].label}</Badge>}</span>}
       footer={edit ? (
         <div className="flex flex-wrap gap-2">
-          {next && <Button onClick={() => { setBookingStatus(b.id, next.s); toast(`${b.code}: ${STATUS_ADMIN[next.s].label.toLowerCase()}`) }}><Check className="size-4" />{next.label}</Button>}
+          {next && <Button onClick={() => { if (next.s === 'issued' || next.s === 'returned') { onClose(); useAdminNav.getState().go('issue', b.id); return } setBookingStatus(b.id, next.s); toast(`${b.code}: ${STATUS_ADMIN[next.s].label.toLowerCase()}`) }}><Check className="size-4" />{next.label}</Button>}
           {(b.status === 'new' || b.status === 'confirmed') && can('bookings.cancel') && <Button variant="danger" onClick={() => setCancelReason('')}>Отменить</Button>}
         </div>
       ) : <NoAccess what="изменять брони" />}>
@@ -141,6 +142,7 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
               </div>
             )}
           </div>
+          <ContractBlock b={b} />
           <div>
             <div className="label mb-2">История</div>
             <ol className="relative border-l border-line ml-1.5 flex flex-col gap-3">

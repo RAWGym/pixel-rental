@@ -10,7 +10,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { useStore, type CheckoutForm } from '../store/store'
 import type { PixelApi, Result } from './api'
-import type { Booking, Customer, Lead, Product, Settings, Staff, Unit, Role } from './types'
+import type { Booking, Customer, Lead, Product, Settings, Staff, Unit, Role, Contract, IssueChecklist, ReturnCheck, ContractTemplate } from './types'
 import { availMap } from '../lib/availability'
 
 const URL_ = import.meta.env.VITE_SUPABASE_URL as string | undefined
@@ -46,12 +46,25 @@ const toBooking = (r: any): Booking => ({
   paymentStatus: r.payment_status, paymentMethod: r.payment_method, deliveryType: r.delivery_type, address: r.address ?? undefined, comment: r.comment ?? undefined,
   status: r.status, source: r.source, managerId: r.manager_id ?? undefined, awaitingVerification: r.awaiting_verification, createdAt: ts(r.created_at),
   history: (r.history ?? []).map((h: any) => ({ at: ts(h.at), by: h.by, text: h.text })),
+  issuedAt: ts(r.issued_at) || undefined, returnedAt: ts(r.returned_at) || undefined, returnCheck: r.return_check ?? undefined,
+  contract: pickContract(r.booking_contracts),
 })
+export const toContract = (r: any): Contract => ({
+  id: r.id, bookingId: r.booking_id, code: r.code, version: r.version, terms: r.terms, termsHash: r.terms_sha256, docHash: r.doc_sha256, snapshot: r.snapshot,
+  signerName: r.signer_name, signaturePath: r.signature_path, signatureHash: r.signature_sha256, checklist: r.checklist ?? {}, verifiedOverride: r.verified_override,
+  signedAt: ts(r.signed_at), issuedBy: r.issued_by, issuedByName: r.issued_by_name, userAgent: r.user_agent ?? undefined, status: r.status, voidReason: r.void_reason ?? undefined,
+})
+/** действующий договор, иначе последний аннулированный */
+const pickContract = (rows?: any[]) => {
+  if (!rows?.length) return undefined
+  const sorted = [...rows].sort((a, b) => (a.status === 'signed' ? -1 : 0) - (b.status === 'signed' ? -1 : 0) || ts(b.signed_at) - ts(a.signed_at))
+  return toContract(sorted[0])
+}
 const toLead = (r: any): Lead => ({ id: r.id, type: r.type, name: r.name, phone: r.phone, text: r.text, productId: r.product_id ?? undefined, city: r.city, status: r.status, assigneeId: r.assignee_id ?? undefined, createdAt: ts(r.created_at) })
 const toStaff = (r: any): Staff => ({ id: r.id, name: r.name, phone: r.phone ?? '', roleId: r.role_id, city: r.city, active: r.active, pin: '', createdAt: ts(r.created_at) })
 const toRole = (r: any): Role => ({ id: r.id, name: r.name, color: r.color, permissions: r.permissions, system: r.system })
 
-const BOOKING_SELECT = '*, booking_items(product_id, qty, price), booking_units(unit_id)'
+const BOOKING_SELECT = '*, booking_items(product_id, qty, price), booking_units(unit_id), booking_contracts(*)'
 
 async function dataUrlToBlob(u: string) { return (await fetch(u)).blob() }
 
@@ -73,11 +86,14 @@ export async function hydrate() {
     const { data: staffRow } = await c.from('staff').select('*').eq('user_id', uid).maybeSingle()
     if (staffRow) {
       // сотрудник: брони, клиенты, заявки, команда — в пределах прав (RLS отфильтрует лишнее)
-      const [b, cu, l, s, r] = await Promise.all([
+      const [b, cu, l, s, r, t] = await Promise.all([
         c.from('bookings').select(BOOKING_SELECT).order('created_at', { ascending: false }).limit(5000),
         c.from('customers').select('*'), c.from('leads').select('*').order('created_at', { ascending: false }),
         c.from('staff').select('*'), c.from('roles').select('*'),
+        c.from('contract_templates').select('*').order('version'),
       ])
+      const templates: ContractTemplate[] = (t.data ?? []).map((x: any) => ({ version: x.version, body: x.body, createdAt: ts(x.created_at) }))
+      if (templates.length) patch.settings = { ...(patch.settings ?? st().settings), contractTemplates: templates }
       Object.assign(patch, { bookings: (b.data ?? []).map(toBooking), customers: (cu.data ?? []).map(toCustomer), leads: (l.data ?? []).map(toLead), staff: (s.data ?? []).map(toStaff), roles: (r.data ?? []).map(toRole), staffId: staffRow.id })
     } else {
       const { data: me } = await c.from('customers').select('*').eq('user_id', uid).maybeSingle()
@@ -379,4 +395,43 @@ export async function clientSetPassword(password: string): Promise<Result<{ cust
 /** пришли по ссылке «сброс пароля» на сайт — показываем форму нового пароля */
 export function watchClientRecovery(open: () => void) {
   client().auth.onAuthStateChange(ev => { if (ev === 'PASSWORD_RECOVERY' && !location.pathname.startsWith('/admin')) open() })
+}
+
+/* ---------- выдача по договору, приёмка ---------- */
+const uuid = () => (crypto as any).randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+
+/** Загружает PNG подписи в приватное хранилище и атомарно выдаёт бронь (issue_booking): договор, единицы, статус, журнал */
+export async function issueRemote(d: {
+  bookingId: string; signerName: string; png: Blob; pngHash: string; strokes: unknown; checklist: IssueChecklist; unitIds?: string[]; override: boolean
+}): Promise<Result<Contract>> {
+  const c = client()
+  const path = `${d.bookingId}/${uuid()}.png`
+  const up = await c.storage.from('contract-signatures').upload(path, d.png, { contentType: 'image/png', upsert: false })
+  if (up.error) return fail(up.error)
+  const { data, error } = await c.rpc('issue_booking', {
+    p_booking_id: d.bookingId, p_signer_name: d.signerName, p_signature_path: path, p_signature_sha256: d.pngHash,
+    p_strokes: d.strokes, p_checklist: d.checklist, p_unit_ids: d.unitIds ?? null, p_override: d.override, p_user_agent: navigator.userAgent,
+  })
+  if (error) return fail(error)
+  const { data: full } = await c.from('bookings').select(BOOKING_SELECT).eq('id', d.bookingId).single()
+  if (full) useStore.setState(s => ({ bookings: s.bookings.map(b => (b.id === d.bookingId ? toBooking(full) : b)) }))
+  return ok(toContract(data))
+}
+export async function returnRemote(bookingId: string, check: ReturnCheck, note?: string): Promise<Result<null>> {
+  const { error } = await client().rpc('return_booking', { p_booking_id: bookingId, p_check: check, p_note: note ?? null })
+  return error ? fail(error) : ok(null)
+}
+export async function voidRemote(contractId: string, reason: string): Promise<Result<null>> {
+  const { error } = await client().rpc('void_contract', { p_contract_id: contractId, p_reason: reason })
+  return error ? fail(error) : ok(null)
+}
+export async function saveTemplateRemote(t: ContractTemplate): Promise<Result<null>> {
+  const { error } = await client().from('contract_templates').insert({ version: t.version, body: t.body, created_by: st().staffId })
+  return error ? fail(error) : ok(null)
+}
+/** подпись из приватного хранилища — временная ссылка на 10 минут */
+export async function signatureUrl(path: string): Promise<string | null> {
+  if (path.startsWith('data:')) return path
+  const { data } = await client().storage.from('contract-signatures').createSignedUrl(path, 600)
+  return data?.signedUrl ?? null
 }

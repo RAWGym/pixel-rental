@@ -417,7 +417,8 @@ export function Dashboard() {
     .map(([id, v]) => ({ id, label: pName(id), v: topBy === 'rev' ? v.rev : v.days }))
   const catRows = (() => { const m = new Map<string, number>(); for (const [id, v] of cur.byProduct) { const p = products.find(x => x.id === id); if (p) m.set(p.category, (m.get(p.category) ?? 0) + v.rev) } return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([id, v]) => ({ id, label: catName(id as any), v })) })()
 
-  const act = (b: Booking, s: BookingStatus) => { setBookingStatus(b.id, s); haptic(15); toast(`${b.code}: ${s === 'issued' ? 'выдана' : 'принята'}`) }
+  // выдача и приёмка — в разделе «Выдача»: выдать можно только с подписью клиента
+  const act = (b: Booking, _s: BookingStatus) => { haptic(10); go('issue', b.id) }
   const attention = [
     can('leads') && ops$.newLeads.length > 0 && { icon: <Inbox className="size-4" />, text: 'Заявки без ответа', n: ops$.newLeads.length, tone: 'text-accent', on: () => go('leads') },
     can('customers') && ops$.verif.length > 0 && { icon: <ShieldCheck className="size-4" />, text: 'Профили ждут проверки', n: ops$.verif.length, tone: 'text-warn', on: () => go('customers') },

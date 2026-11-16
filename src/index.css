@@ -292,3 +292,18 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 @media (min-width: 1900px) { .wide-row { grid-template-columns: repeat(7, minmax(0, 1fr)); } .wide-row > :nth-child(7) { display: flex !important; } }
 @media (min-width: 2500px) { .wide-row { grid-template-columns: repeat(8, minmax(0, 1fr)); } .wide-row > :nth-child(8) { display: flex !important; } }
+
+/* ---------- экран подписи клиента: тёплый «лист бумаги», не слепит в тёмной админке ---------- */
+.sig-screen { width: 100vw; background: #ece5da; color: #231b14; color-scheme: light; }
+.sig-screen .sig-card { background: #f6f1e9; }
+.sig-screen .sig-soft { background: #e2d9cc; color: #231b14; }
+.sig-screen .sig-muted { color: #6f6457; }
+.sig-screen .sig-line { border-color: #ddd2c3; }
+.sig-screen .sig-input { background: #fffaf3; border: 1px solid #d8ccbb; color: #231b14; }
+.sig-screen .sig-paper { background: #fbf8f2; box-shadow: inset 0 0 0 1px #ddd2c3, 0 6px 24px -12px rgba(60, 40, 20, 0.35); }
+.sig-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(240px, 1fr); }
+@media (orientation: landscape) and (min-width: 700px) {
+  .sig-grid { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr); grid-template-rows: minmax(0, 1fr); }
+  .sig-grid > .sig-card { overflow-y: auto; }
+}
+@media (prefers-color-scheme: dark) { .sig-screen { background: #e4dccf; } }

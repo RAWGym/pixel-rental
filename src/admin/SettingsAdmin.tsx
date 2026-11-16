@@ -5,6 +5,38 @@ import { PageHead } from './Admin'
 import { Button, Field, Toggle, toast, Sheet, Badge } from '../ui/kit'
 import { money, dShort, hm, relTime } from '../lib/format'
 import type { CityId } from '../data/types'
+import { currentTemplate } from '../lib/contract'
+import { supabaseConfigured } from '../data/supabase'
+
+/** Текст договора аренды: правит владелец, каждое сохранение — новая версия (подписанные договоры хранят свой текст) */
+function ContractTemplateEditor() {
+  const settings = useStore(s => s.settings)
+  const add = useStore(s => s.addContractTemplate)
+  const cur = currentTemplate(settings)
+  const [body, setBody] = useState(cur.body)
+  const [busy, setBusy] = useState(false)
+  const dirty = body.trim() !== cur.body.trim()
+  const save = async () => {
+    if (body.trim().length < 50) return toast('Слишком короткий текст договора')
+    setBusy(true)
+    try {
+      const t = { version: cur.version + 1, body: body.trim(), createdAt: Date.now() }
+      if (supabaseConfigured) { const { saveTemplateRemote } = await import('../data/supabase'); const r = await saveTemplateRemote(t); if (!r.ok) return toast(r.error, { tone: 'bad' }) }
+      add(body.trim()); toast(`Сохранено: версия ${t.version}`, { tone: 'ok' })
+    } finally { setBusy(false) }
+  }
+  return (
+    <section className="rounded-2xl bg-surface border border-line p-4 flex flex-col gap-3 md:col-span-2">
+      <div className="flex items-center gap-2"><div className="font-semibold">Договор аренды</div><Badge tone="accent">версия {cur.version}</Badge><span className="ml-auto text-xs text-muted">от {dShort(cur.createdAt)}</span></div>
+      <textarea id="contract-body" className="field min-h-[220px] text-sm leading-relaxed" value={body} onChange={e => setBody(e.target.value)} />
+      <div className="flex flex-wrap items-center gap-2">
+        <Button disabled={!dirty || busy} onClick={save}>{busy ? 'Сохраняем…' : 'Сохранить новую версию'}</Button>
+        {dirty && <Button variant="ghost" onClick={() => setBody(cur.body)}>Отменить правки</Button>}
+        <span className="text-xs text-muted">Уже подписанные договоры не меняются: в каждом сохранён свой текст и его хэш.</span>
+      </div>
+    </section>
+  )
+}
 
 export function SettingsAdmin() {
   const { settings, updateSettings, resetDemo } = useStore()
@@ -57,6 +89,7 @@ export function SettingsAdmin() {
             </div>
           </section>
         ) })}
+        {useStore.getState().can('settings') && <ContractTemplateEditor />}
       </div>
       <section className="rounded-2xl border border-bad/30 bg-bad/[0.05] p-4 flex items-center gap-3">
         <div className="flex-1"><div className="font-semibold">Демо-данные</div><div className="text-sm text-muted">Вернуть брони, заявки и настройки к исходному состоянию</div></div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { Search, Bell, Plus, ClipboardList, Users, Package, Inbox, ShieldCheck, AlertTriangle, CornerDownLeft, X } from 'lucide-react'
+import { Search, Bell, Plus, ClipboardList, Users, Package, Inbox, ShieldCheck, AlertTriangle, CornerDownLeft, X, PackageCheck } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store/store'
 import { useAdminNav, type AdminPage } from './Admin'
@@ -25,6 +25,7 @@ export function CommandPalette({ open, onClose, pages }: { open: boolean; onClos
     type R = { key: string; group: string; title: string; sub?: string; icon: React.ReactNode; run: () => void }
     const out: R[] = []
     const actions: R[] = [
+      ...(useStore.getState().can('issue') ? [{ key: 'a-i', group: 'Действия', title: 'Выдать технику', icon: <PackageCheck className="size-4" />, run: () => go('issue') }] : []),
       { key: 'a-b', group: 'Действия', title: 'Новая бронь', icon: <Plus className="size-4" />, run: () => go('bookings', 'create') },
       { key: 'a-c', group: 'Действия', title: 'Новый клиент', icon: <Plus className="size-4" />, run: () => go('customers', 'create') },
       { key: 'a-p', group: 'Действия', title: 'Новый товар', icon: <Plus className="size-4" />, run: () => go('products', 'create') },
@@ -134,6 +135,7 @@ export function QuickAdd() {
   const can = useStore(s => s.can)
   const [open, setOpen] = useState(false)
   const items = [
+    can('issue') && { label: 'Выдача', icon: PackageCheck, run: () => go('issue') },
     can('bookings.edit') && { label: 'Бронь', icon: ClipboardList, run: () => go('bookings', 'create') },
     can('customers') && { label: 'Клиент', icon: Users, run: () => go('customers', 'create') },
     can('products.edit') && { label: 'Товар', icon: Package, run: () => go('products', 'create') },

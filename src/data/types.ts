@@ -70,7 +70,48 @@ export interface Booking {
   awaitingVerification?: boolean
   createdAt: number
   history: HistoryEntry[]
+  issuedAt?: number
+  returnedAt?: number
+  /** чек-лист приёмки */
+  returnCheck?: ReturnCheck
+  /** подписанный договор-акт выдачи */
+  contract?: Contract
 }
+
+/** Чек-лист выдачи */
+export interface IssueChecklist { complete: boolean; condition: boolean; payment: boolean; deposit: boolean; note?: string }
+export interface ReturnCheck { complete: boolean; condition: boolean; clean: boolean; note?: string }
+/** снимок брони на момент подписи — неизменяемая часть договора */
+export interface ContractSnapshot {
+  code: string; city: CityId; supplier: string
+  customer: { id: string; name: string; phone: string; iin?: string | null; verification: string }
+  start: string | number; end: string | number; days: number
+  items: { product_id: string; name: string; qty: number; price: number; deposit: number; units: { id: string; serial: string }[] }[]
+  subtotal: number; discount: number; delivery: number; total: number; deposit: number; paid: number; payment_status: string; payment_method: string
+}
+export interface Contract {
+  id: string
+  bookingId: string
+  code: string
+  version: number
+  terms: string
+  termsHash: string
+  docHash: string
+  snapshot: ContractSnapshot
+  signerName: string
+  /** путь в приватном хранилище (общая база) или data URL (демо) */
+  signaturePath: string
+  signatureHash: string
+  checklist: IssueChecklist
+  verifiedOverride: boolean
+  signedAt: number
+  issuedBy: string
+  issuedByName: string
+  userAgent?: string
+  status: 'signed' | 'void'
+  voidReason?: string
+}
+export interface ContractTemplate { version: number; body: string; createdAt: number }
 
 /** проверка личности: скан удостоверения смотрит менеджер */
 export type Verification = 'none' | 'pending' | 'verified' | 'rejected'
@@ -116,6 +157,7 @@ export type Permission =
   | 'dashboard' | 'bookings.view' | 'bookings.edit' | 'bookings.cancel' | 'calendar'
   | 'products.view' | 'products.edit' | 'pricing.edit' | 'units.edit'
   | 'leads' | 'customers' | 'customers.blacklist' | 'staff' | 'settings' | 'finance'
+  | 'verify' | 'issue' | 'issue.override' | 'contracts.void'
 
 export interface Role { id: string; name: string; color: string; permissions: Permission[]; system?: boolean }
 export interface Staff { id: string; name: string; phone: string; roleId: string; city: CityId | 'all'; active: boolean; pin: string; createdAt: number }
@@ -130,6 +172,8 @@ export interface Settings {
   nightFee: number
   minHours: number
   points: Record<CityId, { address: string; hours: string; open: number; close: number; phone: string }>
+  /** версии текста договора аренды; действует последняя */
+  contractTemplates?: ContractTemplate[]
 }
 
 export interface AuditEntry { id: string; at: number; staffId: string; action: string; target?: string }

@@ -1,3 +1,4 @@
+import { DEFAULT_TEMPLATES } from '../lib/contract'
 import { RAW, NEW_ITEMS } from './raw'
 import type { Product, Unit, CategoryId, Customer, Staff, Role, Booking, Lead, Settings, CityId, BookingItem, Source, PaymentMethod } from './types'
 import { hash, mulberry32 } from '../lib/rng'
@@ -180,9 +181,9 @@ export function buildAll(opts: { history?: boolean } = {}) {
   }))
 
   const roles: Role[] = [
-    { id: 'owner', name: 'Владелец', color: '#FF962E', system: true, permissions: ['dashboard', 'bookings.view', 'bookings.edit', 'bookings.cancel', 'calendar', 'products.view', 'products.edit', 'pricing.edit', 'units.edit', 'leads', 'customers', 'customers.blacklist', 'staff', 'settings', 'finance'] },
-    { id: 'manager', name: 'Менеджер', color: '#5AB0FF', permissions: ['dashboard', 'bookings.view', 'bookings.edit', 'bookings.cancel', 'calendar', 'products.view', 'leads', 'customers'] },
-    { id: 'warehouse', name: 'Кладовщик', color: '#7EE08A', permissions: ['dashboard', 'bookings.view', 'calendar', 'products.view', 'units.edit'] },
+    { id: 'owner', name: 'Владелец', color: '#FF962E', system: true, permissions: ['dashboard', 'bookings.view', 'bookings.edit', 'bookings.cancel', 'calendar', 'products.view', 'products.edit', 'pricing.edit', 'units.edit', 'leads', 'customers', 'customers.blacklist', 'verify', 'issue', 'issue.override', 'contracts.void', 'staff', 'settings', 'finance'] },
+    { id: 'manager', name: 'Менеджер', color: '#5AB0FF', permissions: ['dashboard', 'bookings.view', 'bookings.edit', 'bookings.cancel', 'calendar', 'products.view', 'leads', 'customers', 'verify', 'issue', 'issue.override'] },
+    { id: 'warehouse', name: 'Кладовщик', color: '#7EE08A', permissions: ['dashboard', 'bookings.view', 'calendar', 'products.view', 'units.edit', 'issue'] },
     { id: 'accountant', name: 'Бухгалтер', color: '#C9A7FF', permissions: ['dashboard', 'bookings.view', 'finance', 'customers'] },
   ]
   const staff: Staff[] = [
@@ -204,6 +205,7 @@ export function buildAll(opts: { history?: boolean } = {}) {
       almaty: { address: 'ул. Толе би, 176', hours: 'Круглосуточно', open: 0, close: 24, phone: '' },
       astana: { address: 'ул. Бокейхана, 6', hours: '09:00–21:00, без выходных', open: 9, close: 21, phone: '' },
     },
+    contractTemplates: DEFAULT_TEMPLATES,
   }
 
   // брони
