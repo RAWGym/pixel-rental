@@ -40,7 +40,7 @@ function Login() {
   return (
     <div className="adm grid place-items-center gutter py-10" data-theme={(() => { try { return localStorage.getItem('px-admin-theme') || 'dark' } catch { return 'dark' } })()}>
       <div className="w-full max-w-md flex flex-col gap-6">
-        <div className="flex items-center justify-between"><Logo className="h-10" /><Badge tone="accent">ADMIN</Badge></div>
+        <div className="flex items-center justify-between"><Logo className="h-7 w-auto" /><Badge tone="accent">ADMIN</Badge></div>
         <div className="glass rise p-6 flex flex-col gap-5">
           <div><div className="font-display text-xl font-semibold flex items-center gap-2"><Lock className="size-5 text-accent" />Вход для сотрудников</div><p className="text-sm text-muted mt-1">Выберите себя и введите PIN. Права зависят от роли.</p></div>
           <div className="flex flex-col gap-1.5">
@@ -101,7 +101,7 @@ export function AdminApp() {
 
   const Side = (
     <div className="flex flex-col h-full gap-1 p-3">
-      <div className="flex items-center gap-2 px-2 pt-2 pb-5"><Logo className="h-8" sub={false} /><Badge tone="accent" className="tnum">ADMIN</Badge></div>
+      <div className="flex items-center gap-2 px-2 pt-2 pb-5"><Logo className="h-[22px] w-auto" /><Badge tone="accent" className="tnum">ADMIN</Badge></div>
       {allowed.map(n => {
         const on = page === n.id, c = badge(n.id)
         return (
@@ -146,10 +146,10 @@ export function AdminApp() {
         <div className="glass-bar adm-wrap h-16 px-2.5 flex items-center gap-2 rounded-[22px]">
           <div className="flex items-center gap-2.5 pl-1 pr-2 min-w-0">
             <span className="hidden sm:flex items-center gap-3 min-w-0">
-              <Logo className="h-9 w-auto shrink-0" />
+              <Logo className="h-7 w-auto shrink-0" />
               <span className="hidden xl:block min-w-0 leading-tight border-l border-line pl-3"><span className="block text-sm font-semibold truncate">Админка</span><span className="block text-xs text-muted truncate">{role?.name}</span></span>
             </span>
-            <Logo className="sm:hidden h-6 w-auto shrink-0" sub={false} />
+            <Logo className="sm:hidden h-[22px] w-auto shrink-0" sub={false} />
           </div>
           <nav className="hidden lg:flex items-center gap-1 mx-auto rounded-2xl p-1 soft">
             {top.map((n, i) => <span key={n.id} className="enter-item" style={{ ['--i' as any]: i }}><Pill n={n} /></span>)}

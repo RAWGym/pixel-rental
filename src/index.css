@@ -11,8 +11,8 @@
   --color-fg: #F2EEE9;
   --color-muted: #9A928A;
   --color-faint: #8C837A;
-  --color-accent: #F5923A;
-  --color-accent-2: #F8A75E;
+  --color-accent: #FF962F; /* = цвет логотипа */
+  --color-accent-2: #FFAB5C;
   --color-accent-ink: #1C0F02;
   --color-ok: #7CCB95;
   --color-warn: #E3B860;
@@ -182,7 +182,7 @@ input, textarea, select { font: inherit; color: inherit; }
   --pop: #fbf6ee; --pop-2: #f3eadd; --pop-3: #e9dccb;
   --scene-1: rgba(245, 146, 58, 0.30); --scene-2: rgba(255, 230, 200, 0.9); --scene-3: rgba(201, 138, 44, 0.18); --scene-bg: #e9dccb;
   --color-ok: #1d7346; --color-warn: #8f540a; --color-bad: #ad3b24; --color-info: #255c92;
-  --color-accent: #d9741c; --color-accent-2: #c4651a; --color-accent-ink: #fff8f0;
+  --color-accent: #d9741c; --color-logo: #E8790F; --color-accent-2: #c4651a; --color-accent-ink: #fff8f0;
   --glass-ring: inset 0 0 0 1px rgba(50, 32, 16, 0.08), inset 1px 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(60, 36, 14, 0.06), 0 18px 40px -26px rgba(60, 36, 14, 0.4);
   color-scheme: light;
 }

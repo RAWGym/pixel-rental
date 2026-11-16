@@ -12,7 +12,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   return (
     <div className="adm grid place-items-center gutter py-10" data-theme={theme()}>
       <div className="w-full max-w-md flex flex-col gap-6">
-        <div className="flex items-center justify-between rise"><Logo className="h-10" /><span className="text-xs text-muted">Админка</span></div>
+        <div className="flex items-center justify-between rise"><Logo className="h-8 w-auto" /><span className="text-xs text-muted">Админка</span></div>
         {children}
         <button onClick={leave} className="text-sm text-muted hover:text-fg flex items-center gap-2 justify-center"><ArrowLeft className="size-4" />В приложение для клиентов</button>
       </div>

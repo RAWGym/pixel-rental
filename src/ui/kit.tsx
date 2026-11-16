@@ -6,23 +6,16 @@ import type { CategoryId, Product } from '../data/types'
 import { create } from 'zustand'
 import { isNative, postNative, sheetStack } from '../lib/native'
 import { photoFor } from '../data/photos'
+import { LOGO_W, LOGO_H, PIXEL_X, RENTAL_D, PIXEL_D } from './logoPaths'
 
 export const cx = clsx
 
-/* ---------- Логотип: векторная копия вордмарка ---------- */
+/* ---------- Логотип «RENTAL PIXEL» (вектор из brand/logo-source.png) ---------- */
+/** sub=false — только «PIXEL» (узкие места, иконки) */
 export function Logo({ className = '', sub = true }: { className?: string; sub?: boolean }) {
   return (
-    <svg viewBox={sub ? '0 0 178 60' : '0 0 178 44'} className={className} aria-label="Pixel Rental" role="img">
-      <g fill="none" stroke="var(--color-accent)" strokeWidth="6.4" strokeLinejoin="round">
-        <path d="M3.2 42 V3.2 H24.5 a9.3 9.3 0 0 1 9.3 9.3 v0 a9.3 9.3 0 0 1 -9.3 9.3 H12.4" />
-        <path d="M44 3.2 V42" />
-        <path d="M54 3.2 q16.5 0 16.5 19.4 q0 19.4 -16.5 19.4" />
-        <path d="M91 3.2 q-16.5 0 -16.5 19.4 q0 19.4 16.5 19.4" />
-        <path d="M132 3.2 H109.5 a6 6 0 0 0 -6 6 V36 a6 6 0 0 0 6 6 H132 M106.5 22.6 H128" />
-        <path d="M144.8 0 V36 a6 6 0 0 0 6 6 H175" />
-      </g>
-      {/* «RENTAL - SHOP» — контурами, чтобы не тянуть веб-шрифт */}
-      {sub && <path d="M1.6 57.85V50.2h7.97Q11.75 50.2 11.75 51.48v1.7Q11.75 54.45 9.57 54.45H1.6M8.27 54.45L11.75 57.85M27.1 50.2H16.95v7.65h10.15M16.95 54.03h8.12M32.3 57.85V50.2l10.15 7.65V50.2M47.65 50.2h10.15M52.73 50.2v7.65M63 57.85V51.48Q63 50.2 65.18 50.2h5.8Q73.15 50.2 73.15 51.48V57.85M63 54.62h10.15M78.35 50.2v7.65h10.15M96.7 54.11h5.8M120.85 50.2H112.88Q110.7 50.2 110.7 51.48v1.27Q110.7 54.03 112.88 54.03h5.8Q120.85 54.03 120.85 55.3v1.27Q120.85 57.85 118.68 57.85H110.7M126.05 50.2v7.65M136.2 50.2v7.65M126.05 54.03h10.15M143.58 50.2h5.8Q151.55 50.2 151.55 51.48v5.1Q151.55 57.85 149.38 57.85h-5.8Q141.4 57.85 141.4 56.58v-5.1Q141.4 50.2 143.58 50.2zM156.75 57.85V50.2h7.97Q166.9 50.2 166.9 51.48v1.7Q166.9 54.45 164.72 54.45H156.75" fill="none" stroke="var(--color-accent)" strokeWidth="1.7" strokeLinejoin="round" />}
+    <svg viewBox={sub ? `0 0 ${LOGO_W} ${LOGO_H}` : `${PIXEL_X} 0 ${LOGO_W - PIXEL_X} ${LOGO_H}`} className={className} aria-label="Rental Pixel" role="img">
+      <path fill="var(--color-logo, var(--color-accent))" d={sub ? RENTAL_D + PIXEL_D : PIXEL_D} />
     </svg>
   )
 }

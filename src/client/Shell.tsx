@@ -39,7 +39,7 @@ function SiteFooter() {
   return (
     <footer className="hidden desk:block mt-10 bg-surface">
       <div className="site-wrap py-10 grid grid-cols-4 gap-8 text-sm">
-        <div className="flex flex-col gap-3"><Logo className="h-9 w-auto self-start" /><p className="text-muted">Прокат фото- и видеотехники в Алматы и Астане.</p></div>
+        <div className="flex flex-col gap-3"><Logo className="h-8 w-auto self-start" /><p className="text-muted">Прокат фото- и видеотехники в Алматы и Астане.</p></div>
         {(['almaty', 'astana'] as const).map(c => (
           <div key={c} className="flex flex-col gap-1.5">
             <div className="font-semibold">{c === 'almaty' ? 'Алматы' : 'Астана'}</div>
@@ -71,11 +71,11 @@ function CartCount() {
 
 function Splash({ done }: { done: () => void }) {
   useEffect(() => { const t = setTimeout(done, 1250); return () => clearTimeout(t) }, [])
-  const cols = 14, rows = 8
+  const cols = 24, rows = 3
   return (
     <motion.div className="fixed inset-0 z-[100] bg-bg grid place-items-center" exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
-      <div className="relative w-56">
-        <Logo className="w-full" />
+      <div className="relative w-64 max-w-[70vw]">
+        <Logo className="w-full h-auto block" />
         <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}>
           {Array.from({ length: cols * rows }, (_, i) => (
             <motion.span key={i} className="bg-bg" initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ delay: 0.05 + ((i * 7919) % 97) / 97 * 0.6, duration: 0.05 }} />
@@ -167,7 +167,7 @@ export function ClientApp() {
       <AnimatePresence>{splash && <Splash done={() => { setSplash(false); try { sessionStorage.setItem('px-splash', '1') } catch { /* noop */ } }} />}</AnimatePresence>
       <header className="sticky top-0 z-50 bg-bg border-b border-line/50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="site-wrap h-14 flex items-center gap-3">
-          <button onClick={() => tab('home')} aria-label="На главную" className="shrink-0"><Logo className="h-7 w-auto" sub={false} /></button>
+          <button onClick={() => tab('home')} aria-label="На главную" className="shrink-0"><Logo className="hidden min-[380px]:block h-[22px] desk:h-[30px] w-auto" /><Logo className="min-[380px]:hidden h-6 w-auto" sub={false} /></button>
           <button onClick={() => { setCity(city === 'almaty' ? 'astana' : 'almaty'); haptic() }} className="ml-1 h-8 pl-3 pr-2 rounded-full bg-surface-2 text-sm font-medium flex items-center gap-1 text-fg/90 hover:bg-surface-3 transition-colors">
             <AnimatePresence mode="wait" initial={false}><motion.span key={city} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }}>{city === 'almaty' ? 'Алматы' : 'Астана'}</motion.span></AnimatePresence>
             <ChevronDown className="size-3.5 text-muted" />
