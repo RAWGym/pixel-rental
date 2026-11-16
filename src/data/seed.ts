@@ -90,6 +90,7 @@ function lensSpecs(name: string): string[] {
   else if (/\brf\b/i.test(name)) s.push('Байонет: Canon RF')
   else if (/canon|\bef\b/i.test(name)) s.push('Байонет: Canon EF')
   else if (/fuj|xf/i.test(name)) s.push('Байонет: Fujifilm X')
+  else if (/sigma/i.test(name)) s.push('Байонет: Sony E') // Sigma без указания системы в парке под Sony E
   if (/\bgm\b/i.test(name)) s.push('Серия G Master')
   if (/\bart\b/i.test(name)) s.push('Серия Sigma Art')
   if (/anamorphic/i.test(name)) s.push('Анаморфот 1.33×')
