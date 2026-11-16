@@ -133,12 +133,11 @@ export function buildProducts(): SeedProduct[] {
       if (cat === 'lenses' && !/переходник/i.test(name)) specs = lensSpecs(rawName)
       if (cat === 'kits') { specs = ['Петлички + пушка + рекордер', 'Удочка и ветрозащита', 'Кабели и питание'], description = 'Всё для чистого звука на интервью и в кадре: собранный комплект, ничего не надо докупать.' }
       const id = slug(`${cat}-${name}`)
-      const deposit = price >= 2000 ? Math.round((price * 12) / 5000) * 5000 : 0
       const isNew = newSet.has(rawName.toLowerCase().replace('fujfilm', 'fujifilm').replace('go pro', 'gopro')) || NEW_ITEMS.includes(rawName)
       const tags: string[] = []
       if (/sony e|e-mount|\bfe\b/i.test(rawName) || (/^sony|^объектив sony/i.test(rawName) && cat === 'lenses')) tags.push('sony-e')
       PHOTO_KEY.set(id, rawName.toLowerCase().replace(/ё/g, 'е').replace(/fujfilm/g, 'fujifilm').replace(/go pro/g, 'gopro').replace(/[^0-9a-zа-я]+/g, ''))
-      out.push({ id, name: name.trim(), kind, brand, category: cat, price, deposit, isNew, specs, description, tags, createdAt: now - (500 - order++) * 86400000 / 3, _status: st as any })
+      out.push({ id, name: name.trim(), kind, brand, category: cat, price, isNew, specs, description, tags, createdAt: now - (500 - order++) * 86400000 / 3, _status: st as any })
     }
   }
   return out
@@ -201,7 +200,6 @@ export function buildAll(opts: { history?: boolean } = {}) {
     tiers: [{ days: 3, percent: 10 }, { days: 7, percent: 20 }, { days: 14, percent: 30 }],
     promos: [{ code: 'PIXEL10', percent: 10, active: true, uses: 14, note: 'Для новых клиентов' }, { code: 'STUDENT', percent: 15, active: true, uses: 6, note: 'Студентам киношкол' }],
     deliveryFee: { almaty: 3000, astana: 3000 },
-    depositForNew: true,
     nightFee: 0,
     minHours: 24,
     points: {
@@ -262,7 +260,7 @@ export function buildAll(opts: { history?: boolean } = {}) {
     if (status === 'returned') history.push({ at: end, by: 'Ерлан', text: 'Возвращена, проверено' })
     bookings.push({
       id: `b${codeN}`, code: `PX-${codeN++}`, customerId: cust.id, city, items, start, end, days: len,
-      subtotal: pr.subtotal, discount: pr.discount, delivery: 0, total: pr.total, deposit: 0, paid,
+      subtotal: pr.subtotal, discount: pr.discount, delivery: 0, total: pr.total, paid,
       paymentStatus: paid >= pr.total ? 'paid' : paid > 0 ? 'partial' : 'unpaid', paymentMethod, deliveryType: r() > 0.8 ? 'delivery' : 'pickup',
       address: undefined, status, source: pick(sources), managerId, createdAt, history,
     })
@@ -294,7 +292,7 @@ export function buildAll(opts: { history?: boolean } = {}) {
     { id: 'l6', type: 'waitlist', name: 'Аружан', phone: phone(r), text: 'Жду DJI Mic 3 на выходные', productId: products.find(p => /mic 3/i.test(p.name))?.id, city: 'almaty', status: 'new', createdAt: now - 7 * 3600000 },
     { id: 'l7', type: 'selection', name: 'Игорь', phone: phone(r), text: 'Подкаст на двоих, нужен звук и 2 камеры', city: 'astana', status: 'new', createdAt: now - 26 * 3600000 },
     { id: 'l8', type: 'callback', name: 'Сауле', phone: phone(r), text: 'Хочу понять, какой свет взять для предметки', city: 'almaty', status: 'lost', assigneeId: 's2', createdAt: now - 6 * day },
-    { id: 'l9', type: 'question', name: 'Азамат', phone: phone(r), text: 'Нужен ли залог, если я впервые?', city: 'almaty', status: 'done', assigneeId: 's2', createdAt: now - 4 * day },
+    { id: 'l9', type: 'question', name: 'Азамат', phone: phone(r), text: 'Можно забрать технику ночью?', city: 'almaty', status: 'done', assigneeId: 's2', createdAt: now - 4 * day },
   ]
 
   // заявки за год: часть стала бронями (done), часть потерялась

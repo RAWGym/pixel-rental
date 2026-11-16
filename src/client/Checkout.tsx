@@ -132,7 +132,6 @@ function CheckoutForm() {
           <div className="flex justify-between"><span className="text-muted">Аренда, {daysWord(t.days)}</span><span className="tnum">{money(t.subtotal)}</span></div>
           {t.discount > 0 && <div className="flex justify-between text-ok"><span>Скидка {t.percent}%</span><span className="tnum">−{money(t.discount)}</span></div>}
           {delivery > 0 && <div className="flex justify-between"><span className="text-muted">Доставка</span><span className="tnum">{money(delivery)}</span></div>}
-          {t.deposit > 0 && <div className="flex justify-between"><span className="text-muted">Залог (вернём)</span><span className="tnum">{money(t.deposit)}</span></div>}
         </div>
         <div className="flex justify-between items-baseline pt-3 border-t border-line"><span className="font-semibold">Итого</span><span className="tnum text-xl font-semibold">{money(total)}</span></div>
         <div className="text-xs text-muted">Сейчас ничего не списываем. Менеджер подтвердит бронь в течение 15 минут.</div>
@@ -189,7 +188,7 @@ export function Success() {
       <div className="w-full text-left rounded-2xl bg-accent/[0.07] border border-accent/30 p-4 text-sm">
         <div className="font-semibold mb-1.5">Что взять с собой</div>
         <ul className="flex flex-col gap-1 text-muted">
-          <li>· Удостоверение личности</li>{b.deposit > 0 && <li>· Залог {money(b.deposit)} (вернём при сдаче)</li>}<li>· Номер брони {b.code}</li>
+          <li>· Удостоверение личности</li><li>· Номер брони {b.code}</li>
         </ul>
       </div>
       <div className="flex gap-2 w-full">

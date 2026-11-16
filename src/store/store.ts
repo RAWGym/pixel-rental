@@ -167,7 +167,7 @@ export const useStore = create<State>()(persist((set, get) => ({
       const its = items.map(pid => { const p = s.products.find(p => p.id === pid)!; const u = s.units.find(u => u.productId === pid && u.city === 'almaty'); return { productId: pid, qty: 1, price: p.price, unitIds: u ? [u.id] : [] } })
       const start = day0.getTime() + startIn * DAY, end = start + days * DAY
       const pr = calcPrice(its, days, s.settings)
-      return { id: uid('b'), code, customerId: me.id, city: 'almaty', items: its, start, end, days, subtotal: pr.subtotal, discount: pr.discount, delivery: 0, total: pr.total, deposit: 0,
+      return { id: uid('b'), code, customerId: me.id, city: 'almaty', items: its, start, end, days, subtotal: pr.subtotal, discount: pr.discount, delivery: 0, total: pr.total,
         paid: status === 'returned' ? pr.total : 0, paymentStatus: status === 'returned' ? 'paid' : 'unpaid', paymentMethod: 'kaspi', deliveryType: 'pickup', status, source: 'app', createdAt: start - 2 * DAY,
         history: [{ at: start - 2 * DAY, by: 'Клиент', text: 'Бронь создана в приложении' }] }
     }
@@ -215,11 +215,10 @@ export const useStore = create<State>()(persist((set, get) => ({
     const delivery = f.deliveryType === 'delivery' ? s.settings.deliveryFee[s.city] : 0
     const pr = calcPrice(items, days, s.settings, f.promo || s.promo, delivery)
     const awaiting = verificationOf(cust) !== 'verified'
-    const deposit = s.settings.depositForNew && !cust.verified ? items.reduce((a, i) => a + (s.products.find(p => p.id === i.productId)?.deposit ?? 0) * i.qty, 0) : 0
     const n = 1040 + s.bookings.length + 1
     const b: Booking = {
       id: uid('b'), code: `PX-${n}`, customerId: cust.id, city: s.city, items, start, end, days,
-      subtotal: pr.subtotal, discount: pr.discount, promo: pr.promo?.code, delivery, total: pr.total, deposit, paid: 0,
+      subtotal: pr.subtotal, discount: pr.discount, promo: pr.promo?.code, delivery, total: pr.total, paid: 0,
       paymentStatus: 'unpaid', paymentMethod: f.paymentMethod, deliveryType: f.deliveryType, address: f.address, comment: f.comment,
       status: 'new', source: 'app', awaitingVerification: awaiting || undefined, createdAt: Date.now(),
       history: [{ at: Date.now(), by: 'Клиент', text: awaiting ? 'Бронь создана в приложении · ждёт верификации профиля' : 'Бронь создана в приложении' }],
@@ -334,8 +333,8 @@ export const useStore = create<State>()(persist((set, get) => ({
   storage: debouncedStorage<State>(),
   // v2: в демо-данных появилась история за год — старые сохранения пересоздаём
   // v3: с подключённой базой серверные данные больше не хранятся в браузере — старый кэш сбрасываем
-  // v4: роли с правом «Выдача», шаблон договора
-  version: 4,
+  // v4: роли с правом «Выдача», шаблон договора; v5: без залога (договор v2)
+  version: 5,
   migrate: () => ({}) as any,
   // источник правды для броней, клиентов, заявок, товаров и сотрудников — база; в браузере только личное
   partialize: (s: State) => (LIVE_DB

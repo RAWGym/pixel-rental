@@ -141,7 +141,7 @@ export function BookingDetail() {
           {b.discount > 0 && <div className="flex justify-between text-ok"><span>Скидка{b.promo ? ` (${b.promo})` : ''}</span><span className="tnum">−{money(b.discount)}</span></div>}
           {b.delivery > 0 && <div className="flex justify-between"><span className="text-muted">Доставка</span><span className="tnum">{money(b.delivery)}</span></div>}
           <div className="flex justify-between font-semibold"><span>Итого</span><span className="tnum">{money(b.total)}</span></div>
-          <div className="flex justify-between text-xs text-muted"><span className="flex items-center gap-1"><Receipt className="size-3.5" />{b.paymentStatus === 'paid' ? 'Оплачено' : b.paymentStatus === 'partial' ? `Оплачено ${money(b.paid)}` : 'Не оплачено'}</span>{b.deposit > 0 && <span>Залог {money(b.deposit)}</span>}</div>
+          <div className="flex justify-between text-xs text-muted"><span className="flex items-center gap-1"><Receipt className="size-3.5" />{b.paymentStatus === 'paid' ? 'Оплачено' : b.paymentStatus === 'partial' ? `Оплачено ${money(b.paid)}` : 'Не оплачено'}</span></div>
         </div>
       </div>
 

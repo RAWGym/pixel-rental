@@ -130,11 +130,10 @@ function CustomerCard({ b }: { b: Booking }) {
 
 function Summary({ b }: { b: Booking }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
       <div className="rounded-xl bg-surface-2 p-2.5"><div className="label mb-0.5">Выдача</div><div className="font-medium tnum">{dWithTime(b.start)}</div></div>
       <div className={cx('rounded-xl p-2.5', b.status === 'issued' && b.end < Date.now() ? 'bg-bad/15' : 'bg-surface-2')}><div className="label mb-0.5">Возврат</div><div className="font-medium tnum">{dWithTime(b.end)}</div></div>
       <div className="rounded-xl bg-surface-2 p-2.5"><div className="label mb-0.5">Итого · {daysWord(b.days)}</div><div className="font-medium tnum">{money(b.total)}</div><div className={cx('text-xs tnum', b.paid >= b.total ? 'text-ok' : 'text-warn')}>оплачено {money(b.paid)}</div></div>
-      <div className="rounded-xl bg-surface-2 p-2.5"><div className="label mb-0.5">Залог</div><div className="font-medium tnum">{money(b.deposit)}</div></div>
     </div>
   )
 }
@@ -146,7 +145,7 @@ function IssuePanel({ b, onDone }: { b: Booking; onDone: () => void }) {
   const canOverride = s.can('issue.override')
   // единицы техники: по позициям, можно заменить на свободную того же товара
   const [units, setUnits] = useState<Record<string, string[]>>(() => Object.fromEntries(b.items.map(i => [i.productId, [...i.unitIds]])))
-  const [ch, setCh] = useState<IssueChecklist>({ complete: false, condition: false, payment: b.paid >= b.total, deposit: b.deposit === 0, note: '' })
+  const [ch, setCh] = useState<IssueChecklist>({ complete: false, condition: false, payment: b.paid >= b.total, note: '' })
   const [override, setOverride] = useState(false)
   const [signing, setSigning] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -155,7 +154,7 @@ function IssuePanel({ b, onDone }: { b: Booking; onDone: () => void }) {
   const filled = b.items.every(i => (units[i.productId] ?? []).filter(Boolean).length === i.qty && new Set(units[i.productId]).size === i.qty)
   const badUnit = b.items.some(i => (units[i.productId] ?? []).some(id => { const u = s.units.find(x => x.id === id); return !u || u.maintenance || u.condition === 'repair' }))
   const verifiedOk = v === 'verified' || (override && canOverride)
-  const ready = ch.complete && ch.condition && ch.payment && ch.deposit && filled && !badUnit && verifiedOk && !c?.blacklisted
+  const ready = ch.complete && ch.condition && ch.payment && filled && !badUnit && verifiedOk && !c?.blacklisted
   const snapshot = useMemo(() => buildSnapshot(b, c, s.products, s.units, units), [b, c, units])
 
   const done = async (r: SignatureResult) => {
@@ -220,7 +219,6 @@ function IssuePanel({ b, onDone }: { b: Booking; onDone: () => void }) {
         <Check checked={ch.complete} onChange={x => setCh({ ...ch, complete: x })}>Комплектность проверена (кабели, АКБ, крышки, кейс)</Check>
         <Check checked={ch.condition} onChange={x => setCh({ ...ch, condition: x })}>Состояние осмотрено, повреждения отмечены</Check>
         <Check checked={ch.payment} onChange={x => setCh({ ...ch, payment: x })}>Оплата аренды получена{b.paid < b.total ? ` (осталось ${money(b.total - b.paid)})` : ''}</Check>
-        <Check checked={ch.deposit} onChange={x => setCh({ ...ch, deposit: x })} disabled={b.deposit === 0}>{b.deposit ? `Залог ${money(b.deposit)} получен` : 'Залог не требуется'}</Check>
         <textarea className="field min-h-[64px]" placeholder="Замечания: царапина на корпусе, нет бленды…" value={ch.note} onChange={e => setCh({ ...ch, note: e.target.value })} />
       </div>
       {c?.blacklisted && <div className="rounded-xl bg-bad/15 text-bad p-3 text-sm flex gap-2"><AlertTriangle className="size-4 shrink-0 mt-0.5" />Клиент в чёрном списке — выдача запрещена</div>}
@@ -232,7 +230,7 @@ function IssuePanel({ b, onDone }: { b: Booking; onDone: () => void }) {
       )}
       {badUnit && <div className="text-sm text-bad">Одна из единиц на обслуживании — выберите другую.</div>}
       <Button size="lg" block disabled={!ready} onClick={() => { haptic(15); setSigning(true) }} className="h-14 text-base"><PackageCheck className="size-5" />Выдать</Button>
-      {!ready && <div className="text-xs text-muted text-center -mt-1">{!filled ? 'Выберите единицы техники' : !(ch.complete && ch.condition && ch.payment && ch.deposit) ? 'Отметьте все пункты чек-листа' : !verifiedOk ? 'Нужна проверка профиля или разрешение менеджера' : ''}</div>}
+      {!ready && <div className="text-xs text-muted text-center -mt-1">{!filled ? 'Выберите единицы техники' : !(ch.complete && ch.condition && ch.payment) ? 'Отметьте все пункты чек-листа' : !verifiedOk ? 'Нужна проверка профиля или разрешение менеджера' : ''}</div>}
       {signing && <SignatureScreen snapshot={snapshot} terms={tpl.body} version={tpl.version} defaultName={c?.name ?? ''} busy={busy} onCancel={() => setSigning(false)} onConfirm={done} />}
     </div>
   )

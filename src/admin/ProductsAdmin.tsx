@@ -12,7 +12,7 @@ import { uid } from '../lib/rng'
 
 const COND: Record<UnitCondition, string> = { new: 'Новое', good: 'Хорошее', worn: 'Есть износ', repair: 'В ремонте' }
 
-const NUM = new Set(["Цена/сут", "Залог", "Алматы", "Астана"])
+const NUM = new Set(["Цена/сут", "Алматы", "Астана"])
 
 export function ProductsAdmin() {
   const { products, units, bookings } = useStore()
@@ -25,7 +25,7 @@ export function ProductsAdmin() {
   useEffect(() => { if (!focus) return; if (focus === 'create') setEdit(blank()); else { const p = products.find(x => x.id === focus); if (p) setEdit(p) } }, [focus])
   const busy = useMemo(() => busyUnitIds(bookings, Date.now(), Date.now() + 1), [bookings])
   const list = useMemo(() => products.filter(p => (cat === 'all' || p.category === cat) && matchProduct(p, q)), [products, cat, q])
-  const blank = (): Product => ({ id: uid('p-'), name: '', kind: 'Камера', brand: '', category: cat === 'all' ? 'cameras' : cat, price: 5000, deposit: 50000, isNew: true, specs: [], tags: [], createdAt: Date.now() })
+  const blank = (): Product => ({ id: uid('p-'), name: '', kind: 'Камера', brand: '', category: cat === 'all' ? 'cameras' : cat, price: 5000, isNew: true, specs: [], tags: [], createdAt: Date.now() })
   return (
     <div>
       <PageHead title="Товары и наличие" sub={`${products.length} позиций, ${units.length} единиц техники`} actions={<>
@@ -37,7 +37,7 @@ export function ProductsAdmin() {
       </div>
       <div className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm min-w-[820px]">
-          <thead><tr className="text-left text-xs text-muted border-b border-line">{['Товар', 'Категория', 'Цена/сут', 'Залог', 'Алматы', 'Астана', 'Сейчас', ''].map(h => <th key={h} className={cx('px-4 py-3 font-medium', NUM.has(h) && 'num')}>{h}</th>)}</tr></thead>
+          <thead><tr className="text-left text-xs text-muted border-b border-line">{['Товар', 'Категория', 'Цена/сут', 'Алматы', 'Астана', 'Сейчас', ''].map(h => <th key={h} className={cx('px-4 py-3 font-medium', NUM.has(h) && 'num')}>{h}</th>)}</tr></thead>
           <tbody>
             {list.map(p => {
               const us = units.filter(u => u.productId === p.id)
@@ -48,7 +48,6 @@ export function ProductsAdmin() {
                   <td className="px-4 py-2.5"><div className="flex items-center gap-3"><ProductArt p={p} size="sm" className="size-10 rounded-lg shrink-0" /><div className="min-w-0"><div className="font-medium truncate max-w-[280px] flex items-center gap-1.5">{p.name}{p.isNew && <Badge tone="accent" className="h-5 tnum">NEW</Badge>}</div><div className="text-xs text-muted">{p.brand} · {p.kind}</div></div></div></td>
                   <td className="px-4 py-2.5 text-muted">{catName(p.category)}</td>
                   <td className="num">{money(p.price)}</td>
-                  <td className="num text-muted">{p.deposit ? money(p.deposit) : '—'}</td>
                   <td className="num">{a.length}</td>
                   <td className="num">{s.length}</td>
                   <td className="px-4 py-2.5"><div className="flex gap-1">{out > 0 && <Badge tone="accent">{out} на руках</Badge>}{rep > 0 && <Badge tone="warn"><Wrench className="size-3" />{rep}</Badge>}{!out && !rep && <span className="text-xs text-ok">всё на складе</span>}</div></td>
@@ -88,9 +87,8 @@ function ProductEditor({ p, onClose }: { p: Product | null; onClose: () => void 
             <Field label="Тип"><input id="pe-kind" disabled={!edit} className="field" value={f.kind} onChange={e => set({ kind: e.target.value })} /></Field>
           </div>
           <Field label="Категория"><select id="pe-cat" disabled={!edit} className="field" value={f.category} onChange={e => set({ category: e.target.value as CategoryId })}>{CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
-          <div className="grid grid-cols-2 gap-2">
+          <div>
             <Field label="Цена, ₸/сутки" hint={!price ? 'Нужно право «Цены»' : undefined}><input id="pe-price" disabled={!price} className="field tnum" inputMode="numeric" value={f.price} onChange={e => set({ price: Number(e.target.value.replace(/\D/g, '')) })} /></Field>
-            <Field label="Залог, ₸"><input id="pe-dep" disabled={!price} className="field tnum" inputMode="numeric" value={f.deposit} onChange={e => set({ deposit: Number(e.target.value.replace(/\D/g, '')) })} /></Field>
           </div>
           <Field label="Характеристики" hint="Каждая с новой строки"><textarea id="pe-specs" disabled={!edit} rows={4} className="field resize-none text-sm" value={f.specs.join('\n')} onChange={e => set({ specs: e.target.value.split('\n') })} /></Field>
           <Field label="Что в комплекте" hint="Каждая позиция с новой строки — видно клиенту на странице товара"><textarea id="pe-inc" disabled={!edit} rows={3} className="field resize-none text-sm" value={(f.includes ?? []).join('\n')} onChange={e => set({ includes: e.target.value.split('\n') })} placeholder={'Камера\nАккумулятор ×2\nЗарядное устройство'} /></Field>

@@ -183,7 +183,6 @@ export function CompareScreen() {
           <Row label="Разница" render={p => p.price === min ? <span className="text-ok">самый доступный</span> : <span className="tnum text-muted">+{money(p.price - min)}/сут</span>} />
           <Row label={`За ваши даты (${daysWord(days)})`} render={p => <span className="tnum">{money(p.price * days)}</span>} />
           <Row label="Наличие на даты" render={p => { const a = avail.get(p.id); return <span className="flex items-center gap-1.5"><span className={cx('size-2 rounded-full', !a?.total ? 'bg-faint' : a.free ? 'bg-ok' : 'bg-bad')} />{!a?.total ? 'нет в городе' : a.free ? `свободно ${a.free}` : 'занято'}</span> }} />
-          <Row label="Залог для новых" render={p => <span className="tnum">{p.deposit ? money(p.deposit) : '—'}</span>} />
           <Row label="Тип · бренд" render={p => `${p.kind} · ${p.brand}`} />
           {Array.from({ length: maxSpecs }, (_, i) => <Row key={i} label={i === 0 ? 'Характеристики' : ''} render={p => p.specs[i] ?? <span className="text-faint">—</span>} />)}
           <div className="col-span-full h-3" />

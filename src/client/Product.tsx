@@ -147,7 +147,6 @@ export function ProductScreen() {
   const busyOnDates = a.total > 0 && a.free <= qty
   const example = (d: number) => calcPrice([{ price: p.price, qty: n }], d, settings)
   const inc = includesOf(p)
-  const depositApplies = settings.depositForNew && !me?.verified
   const add = () => { addToCart(p.id, Math.max(1, Math.min(want, a.total - qty))); haptic(); toast('Добавлено в корзину', { action: { label: 'Корзина', fn: () => tab('cart') } }) }
 
   const share = async () => {

@@ -133,7 +133,6 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
             {b.delivery > 0 && <div className="flex justify-between"><span className="text-muted">Доставка</span><span className="tnum">{money(b.delivery)}</span></div>}
             <div className="flex justify-between font-semibold"><span>Итого</span><span className="tnum">{money(b.total)}</span></div>
             <div className="flex justify-between"><span className="text-muted">Оплачено ({PAY[b.paymentMethod]})</span><span className="tnum">{money(b.paid)}</span></div>
-            {b.deposit > 0 && <div className="flex justify-between"><span className="text-muted">Залог</span><span className="tnum">{money(b.deposit)}</span></div>}
             <div className="h-1.5 rounded-full bg-surface-3 overflow-hidden mt-1"><motion.div className="h-full bg-ok" initial={{ width: 0 }} animate={{ width: `${(b.paid / b.total) * 100}%` }} /></div>
             {edit && b.paid < b.total && b.status !== 'cancelled' && (
               <div className="flex gap-2 mt-2">
@@ -200,7 +199,7 @@ function CreateBooking({ open, onClose, onCreated }: { open: boolean; onClose: (
     if (!cid) { cid = uid('c'); cs = [{ id: cid, name: newCust.name, phone: newCust.phone, verified: false, blacklisted: false, createdAt: Date.now(), tags: ['Новый'] }, ...cs] }
     const items = lineItems.map(l => ({ productId: l.id, qty: l.qty, price: l.p.price, unitIds: freeUnits(s.units, s.bookings, l.id, city, start, end).slice(0, l.qty).map(u => u.id) }))
     const n = 1040 + s.bookings.length + 1
-    const b: Booking = { id: uid('b'), code: `PX-${n}`, customerId: cid, city, items, start, end, days, subtotal: pr.subtotal, discount: pr.discount, delivery: 0, total: pr.total, deposit: 0, paid: 0, paymentStatus: 'unpaid', paymentMethod: method, deliveryType: 'pickup', status: 'confirmed', source, managerId: staffId ?? undefined, createdAt: Date.now(), history: [{ at: Date.now(), by: me?.name.split(' ')[0] ?? '—', text: 'Создана менеджером и подтверждена' }] }
+    const b: Booking = { id: uid('b'), code: `PX-${n}`, customerId: cid, city, items, start, end, days, subtotal: pr.subtotal, discount: pr.discount, delivery: 0, total: pr.total, paid: 0, paymentStatus: 'unpaid', paymentMethod: method, deliveryType: 'pickup', status: 'confirmed', source, managerId: staffId ?? undefined, createdAt: Date.now(), history: [{ at: Date.now(), by: me?.name.split(' ')[0] ?? '—', text: 'Создана менеджером и подтверждена' }] }
     useStore.setState({ bookings: [b, ...s.bookings], customers: cs })
     s.log('Создана бронь', b.code)
     toast(`Бронь ${b.code} создана`)

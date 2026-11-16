@@ -30,7 +30,7 @@ const st = () => useStore.getState()
 /* ---------- строки базы → типы приложения ---------- */
 const photoUrl = (p?: string | null) => (!p ? undefined : /^https?:|^data:|^\//.test(p) ? p : client().storage.from('product-photos').getPublicUrl(p).data.publicUrl)
 const toProduct = (r: any): Product => ({
-  id: r.id, name: r.name, kind: r.kind, brand: r.brand, category: r.category_id, price: r.price, deposit: r.deposit, isNew: r.is_new, hidden: r.hidden,
+  id: r.id, name: r.name, kind: r.kind, brand: r.brand, category: r.category_id, price: r.price, isNew: r.is_new, hidden: r.hidden,
   specs: r.specs ?? [], includes: r.includes ?? [], gallery: (r.gallery ?? []).map(photoUrl), description: r.description ?? undefined, tags: r.tags ?? [], createdAt: ts(r.created_at),
 })
 const toUnit = (r: any): Unit => ({ id: r.id, productId: r.product_id, serial: r.serial, city: r.city, condition: r.condition, maintenance: r.maintenance, note: r.note ?? undefined })
@@ -42,7 +42,7 @@ const toCustomer = (r: any): Customer => ({
 const toBooking = (r: any): Booking => ({
   id: r.id, code: r.code, customerId: r.customer_id, city: r.city, start: ts(r.start_at), end: ts(r.end_at), days: r.days,
   items: (r.booking_items ?? []).map((i: any) => ({ productId: i.product_id, qty: i.qty, price: i.price, unitIds: (r.booking_units ?? []).filter((u: any) => u.unit_id.startsWith(i.product_id + '#')).map((u: any) => u.unit_id) })),
-  subtotal: r.subtotal, discount: r.discount, promo: r.promo ?? undefined, delivery: r.delivery, total: r.total, deposit: r.deposit, paid: r.paid,
+  subtotal: r.subtotal, discount: r.discount, promo: r.promo ?? undefined, delivery: r.delivery, total: r.total, paid: r.paid,
   paymentStatus: r.payment_status, paymentMethod: r.payment_method, deliveryType: r.delivery_type, address: r.address ?? undefined, comment: r.comment ?? undefined,
   status: r.status, source: r.source, managerId: r.manager_id ?? undefined, awaitingVerification: r.awaiting_verification, createdAt: ts(r.created_at),
   history: (r.history ?? []).map((h: any) => ({ at: ts(h.at), by: h.by, text: h.text })),
@@ -80,7 +80,7 @@ export async function hydrate() {
   const patch: any = {}
   if (products?.length) patch.products = products.map(toProduct)
   if (units?.length) patch.units = units.map(toUnit)
-  if (settings) patch.settings = { ...st().settings, tiers: settings.tiers, deliveryFee: settings.delivery_fee, depositForNew: settings.deposit_for_new, nightFee: settings.night_fee, minHours: settings.min_hours, points: settings.points } as Settings
+  if (settings) patch.settings = { ...st().settings, tiers: settings.tiers, deliveryFee: settings.delivery_fee, nightFee: settings.night_fee, minHours: settings.min_hours, points: settings.points } as Settings
   const uid = session.session?.user.id
   if (uid) {
     const { data: staffRow } = await c.from('staff').select('*').eq('user_id', uid).maybeSingle()
@@ -112,7 +112,7 @@ export async function hydrate() {
     const ghosts: Booking[] = ((busy ?? []) as any[]).filter(r => !mineUnits.has(r.unit_id)).map((r, i) => {
       const pid = (patch.units ?? st().units).find((u: Unit) => u.id === r.unit_id)?.productId ?? ''
       return { id: `busy-${i}`, code: '', customerId: '', city: 'almaty', items: [{ productId: pid, qty: 1, price: 0, unitIds: [r.unit_id] }], start: ts(r.start_at), end: ts(r.end_at), days: 1,
-        subtotal: 0, discount: 0, delivery: 0, total: 0, deposit: 0, paid: 0, paymentStatus: 'unpaid', paymentMethod: 'kaspi', deliveryType: 'pickup', status: r.issued ? 'issued' : 'confirmed', source: 'app', createdAt: 0, history: [] }
+        subtotal: 0, discount: 0, delivery: 0, total: 0, paid: 0, paymentStatus: 'unpaid', paymentMethod: 'kaspi', deliveryType: 'pickup', status: r.issued ? 'issued' : 'confirmed', source: 'app', createdAt: 0, history: [] }
     })
     patch.bookings = [...mine, ...ghosts]
     if (!patch.customers) patch.customers = []
@@ -251,12 +251,12 @@ export function mirrorStoreWrites() {
   wrap('setBookingStatus', (id: string) => pushBooking(id))
   wrap('patchBooking', (id: string) => pushBooking(id))
   wrap('addPayment', (id: string) => pushBooking(id))
-  wrap('upsertProduct', async (p: Product) => warn((await c.from('products').upsert({ id: p.id, name: p.name, kind: p.kind, brand: p.brand, category_id: p.category, price: p.price, deposit: p.deposit, is_new: p.isNew, hidden: !!p.hidden, specs: p.specs, includes: p.includes ?? [], description: p.description ?? null, tags: p.tags, updated_at: iso(Date.now()) })).error))
+  wrap('upsertProduct', async (p: Product) => warn((await c.from('products').upsert({ id: p.id, name: p.name, kind: p.kind, brand: p.brand, category_id: p.category, price: p.price, is_new: p.isNew, hidden: !!p.hidden, specs: p.specs, includes: p.includes ?? [], description: p.description ?? null, tags: p.tags, updated_at: iso(Date.now()) })).error))
   wrap('upsertUnit', async (u: Unit) => warn((await c.from('product_units').upsert({ id: u.id, product_id: u.productId, serial: u.serial, city: u.city, condition: u.condition, maintenance: u.maintenance, note: u.note ?? null })).error))
   wrap('removeUnit', async (id: string) => warn((await c.from('product_units').delete().eq('id', id)).error))
   wrap('upsertCustomer', async (cu: Customer) => warn((await c.from('customers').upsert({ id: cu.id, name: cu.name, phone: cu.phone, email: cu.email ?? null, company: cu.company ?? null, blacklisted: cu.blacklisted, note: cu.note ?? null, tags: cu.tags })).error))
   wrap('upsertLead', async (l: Lead) => warn((await c.from('leads').update({ status: l.status, assignee_id: l.assigneeId ?? null }).eq('id', l.id)).error))
-  wrap('updateSettings', async () => { const x = st().settings; warn((await c.from('settings').update({ tiers: x.tiers, delivery_fee: x.deliveryFee, deposit_for_new: x.depositForNew, night_fee: x.nightFee, min_hours: x.minHours, points: x.points }).eq('id', 1)).error) })
+  wrap('updateSettings', async () => { const x = st().settings; warn((await c.from('settings').update({ tiers: x.tiers, delivery_fee: x.deliveryFee, night_fee: x.nightFee, min_hours: x.minHours, points: x.points }).eq('id', 1)).error) })
   wrap('log', async (action: string, target?: string) => warn((await c.from('audit_log').insert({ staff_id: st().staffId, action, target: target ?? null })).error))
 }
 

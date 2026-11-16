@@ -71,8 +71,7 @@ export function SettingsAdmin() {
           <p className="text-xs text-muted">Скидки не суммируются: клиент получает большую из двух, за срок или по коду.</p>
         </section>
         <section className={card}>
-          <div className="font-semibold">Залог и доставка</div>
-          <div className="flex items-center justify-between gap-3"><span className="text-sm">Брать залог с новых клиентов</span><Toggle checked={settings.depositForNew} onChange={v => updateSettings({ depositForNew: v })} /></div>
+          <div className="font-semibold">Доставка</div>
           {(['almaty', 'astana'] as CityId[]).map(c => (
             <Field key={c} label={`Доставка, ${c === 'almaty' ? 'Алматы' : 'Астана'}, ₸`}><input id={`dlv-${c}`} type="number" className="field tnum" value={settings.deliveryFee[c]} onChange={e => updateSettings({ deliveryFee: { ...settings.deliveryFee, [c]: Number(e.target.value) } })} /></Field>
           ))}

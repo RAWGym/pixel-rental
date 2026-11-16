@@ -20,9 +20,8 @@ export function useCartTotals() {
     const days = rentalDays(range.start, range.end)
     const lines = cart.map(c => ({ ...c, product: products.find(p => p.id === c.productId)! })).filter(l => l.product)
     const pr = calcPrice(lines.map(l => ({ price: l.product.price, qty: l.qty })), days, settings, promo)
-    const deposit = settings.depositForNew && !me?.verified ? lines.reduce((s, l) => s + l.product.deposit * l.qty, 0) : 0
     const count = lines.reduce((s, l) => s + l.qty, 0)
-    return { days, lines, ...pr, deposit, count }
+    return { days, lines, ...pr, count }
   }, [cart, products, settings, range, promo, me])
 }
 
@@ -125,7 +124,6 @@ export function CartScreen() {
             <span className="font-semibold">К оплате</span>
             <span className="tnum text-xl font-semibold"><AnimatedNumber value={t.total} format={n => money(n)} /></span>
           </div>
-          {t.deposit > 0 && <div className="text-xs text-muted flex gap-1.5"><ShieldCheck className="size-3.5 mt-0.5 shrink-0" />Залог {money(t.deposit)}: только для первой аренды, возвращаем при сдаче.</div>}
           <Button size="lg" block className="hidden lg:flex" disabled={conflicts.length > 0} onClick={() => go('checkout')}>Оформить бронь <ChevronRight className="size-5" /></Button>
         </div>
       </aside>

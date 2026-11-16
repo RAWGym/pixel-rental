@@ -9,7 +9,7 @@ import { uid } from '../lib/rng'
 export const PERMS: { id: Permission; label: string; group: string }[] = [
   { id: 'dashboard', label: 'Сводка', group: 'Общее' }, { id: 'finance', label: 'Финансы и выручка', group: 'Общее' },
   { id: 'bookings.view', label: 'Видеть брони', group: 'Брони' }, { id: 'bookings.edit', label: 'Создавать и менять', group: 'Брони' }, { id: 'bookings.cancel', label: 'Отменять', group: 'Брони' }, { id: 'calendar', label: 'Шахматка', group: 'Брони' },
-  { id: 'products.view', label: 'Видеть товары', group: 'Каталог' }, { id: 'products.edit', label: 'Редактировать товары', group: 'Каталог' }, { id: 'pricing.edit', label: 'Цены и залоги', group: 'Каталог' }, { id: 'units.edit', label: 'Единицы, ТО, списание', group: 'Каталог' },
+  { id: 'products.view', label: 'Видеть товары', group: 'Каталог' }, { id: 'products.edit', label: 'Редактировать товары', group: 'Каталог' }, { id: 'pricing.edit', label: 'Цены', group: 'Каталог' }, { id: 'units.edit', label: 'Единицы, ТО, списание', group: 'Каталог' },
   { id: 'leads', label: 'Заявки', group: 'Клиенты' }, { id: 'customers', label: 'База клиентов', group: 'Клиенты' }, { id: 'customers.blacklist', label: 'Чёрный список', group: 'Клиенты' },
   { id: 'staff', label: 'Сотрудники и роли', group: 'Управление' }, { id: 'settings', label: 'Настройки', group: 'Управление' },
 ]

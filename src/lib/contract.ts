@@ -2,14 +2,14 @@ import type { Booking, Contract, ContractSnapshot, ContractTemplate, Customer, P
 
 /** Текст условий по умолчанию (версия 1) — совпадает с supabase/migrations/…_issue_contracts.sql */
 export const DEFAULT_CONTRACT_BODY = `Поставщик (Pixel Rental) передаёт, а Арендатор принимает во временное пользование технику, указанную в акте, на указанный срок.
-1. Арендатор проверил комплектность и внешнее состояние техники при получении; замечания внесены в акт.
+1. Арендатор проверил комплектность и внешнее состояние техники при получении. Замечания внесены в акт.
 2. Арендатор обязуется использовать технику бережно, по назначению, не передавать третьим лицам и вернуть её в срок в том же состоянии с учётом нормального износа.
-3. Стоимость аренды и залог указаны в акте. Залог возвращается после приёмки техники без повреждений.
+3. Стоимость аренды указана в акте.
 4. За просрочку возврата начисляется оплата за каждые начатые сутки по тарифу. При утрате или повреждении Арендатор возмещает стоимость ремонта или рыночную стоимость техники.
 5. Риск случайной гибели и повреждения техники с момента выдачи до возврата несёт Арендатор.
 6. Подписывая акт, Арендатор подтверждает согласие с условиями аренды и достоверность своих данных.`
 
-export const DEFAULT_TEMPLATES: ContractTemplate[] = [{ version: 1, body: DEFAULT_CONTRACT_BODY, createdAt: Date.UTC(2026, 10, 16) }]
+export const DEFAULT_TEMPLATES: ContractTemplate[] = [{ version: 2, body: DEFAULT_CONTRACT_BODY, createdAt: Date.UTC(2026, 10, 16) }]
 export const currentTemplate = (s: Settings): ContractTemplate => {
   const list = s.contractTemplates?.length ? s.contractTemplates : DEFAULT_TEMPLATES
   return list.reduce((a, b) => (b.version > a.version ? b : a))
@@ -24,9 +24,9 @@ export function buildSnapshot(b: Booking, c: Customer | undefined, products: Pro
     items: b.items.map(i => {
       const p = products.find(x => x.id === i.productId)
       const ids = unitIds?.[i.productId] ?? i.unitIds
-      return { product_id: i.productId, name: p?.name ?? i.productId, qty: i.qty, price: i.price, deposit: p?.deposit ?? 0, units: ids.map(id => ({ id, serial: units.find(u => u.id === id)?.serial ?? id })) }
+      return { product_id: i.productId, name: p?.name ?? i.productId, qty: i.qty, price: i.price, units: ids.map(id => ({ id, serial: units.find(u => u.id === id)?.serial ?? id })) }
     }),
-    subtotal: b.subtotal, discount: b.discount, delivery: b.delivery, total: b.total, deposit: b.deposit, paid: b.paid, payment_status: b.paymentStatus, payment_method: b.paymentMethod,
+    subtotal: b.subtotal, discount: b.discount, delivery: b.delivery, total: b.total, paid: b.paid, payment_status: b.paymentStatus, payment_method: b.paymentMethod,
   }
 }
 

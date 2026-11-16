@@ -10,7 +10,6 @@ export interface Product {
   brand: string
   category: CategoryId
   price: number       // ₸/сутки
-  deposit: number     // ₸
   isNew: boolean
   hidden?: boolean
   specs: string[]
@@ -56,7 +55,6 @@ export interface Booking {
   promo?: string
   delivery: number
   total: number
-  deposit: number
   paid: number
   paymentStatus: PaymentStatus
   paymentMethod: PaymentMethod
@@ -79,15 +77,15 @@ export interface Booking {
 }
 
 /** Чек-лист выдачи */
-export interface IssueChecklist { complete: boolean; condition: boolean; payment: boolean; deposit: boolean; note?: string }
+export interface IssueChecklist { complete: boolean; condition: boolean; payment: boolean; note?: string }
 export interface ReturnCheck { complete: boolean; condition: boolean; clean: boolean; note?: string }
 /** снимок брони на момент подписи — неизменяемая часть договора */
 export interface ContractSnapshot {
   code: string; city: CityId; supplier: string
   customer: { id: string; name: string; phone: string; iin?: string | null; verification: string }
   start: string | number; end: string | number; days: number
-  items: { product_id: string; name: string; qty: number; price: number; deposit: number; units: { id: string; serial: string }[] }[]
-  subtotal: number; discount: number; delivery: number; total: number; deposit: number; paid: number; payment_status: string; payment_method: string
+  items: { product_id: string; name: string; qty: number; price: number; units: { id: string; serial: string }[] }[]
+  subtotal: number; discount: number; delivery: number; total: number; paid: number; payment_status: string; payment_method: string
 }
 export interface Contract {
   id: string
@@ -168,7 +166,6 @@ export interface Settings {
   tiers: DiscountTier[]
   promos: PromoCode[]
   deliveryFee: Record<CityId, number>
-  depositForNew: boolean
   nightFee: number
   minHours: number
   points: Record<CityId, { address: string; hours: string; open: number; close: number; phone: string }>

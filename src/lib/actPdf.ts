@@ -88,14 +88,13 @@ export async function buildActPdf(c: Contract, signaturePng: Uint8Array | null, 
   if (s.discount) sumRow('Скидка', '−' + money(s.discount))
   if (s.delivery) sumRow('Доставка', money(s.delivery))
   sumRow('Итого к оплате', money(s.total), true)
-  sumRow('Залог', money(s.deposit))
   sumRow(`Оплачено (${PAY[s.payment_method] ?? s.payment_method})`, money(s.paid))
   rule(10)
 
   // чек-лист выдачи
   const ch = c.checklist ?? ({} as any)
   const mark = (v: boolean) => (v ? '[x]' : '[ ]')
-  para(`${mark(ch.complete)} Комплектность проверена   ${mark(ch.condition)} Состояние осмотрено   ${mark(ch.payment)} Оплата получена   ${mark(ch.deposit)} Залог получен`, 9.5)
+  para(`${mark(ch.complete)} Комплектность проверена   ${mark(ch.condition)} Состояние осмотрено   ${mark(ch.payment)} Оплата получена`, 9.5)
   if (ch.note) para(`Замечания при выдаче: ${ch.note}`, 9.5, F, INK)
   if (c.verifiedOverride) para('Профиль арендатора не был подтверждён на момент выдачи; выдачу подтвердил сотрудник.', 9, F, rgb(0.7, 0.35, 0.05))
   rule(10)

@@ -147,7 +147,7 @@ export function SignatureScreen({ snapshot, terms, version, defaultName, onCance
               <li key={i.product_id} className="flex gap-2 min-w-0"><span className="flex-1 min-w-0"><span className="block truncate">{i.name}{i.qty > 1 ? ` × ${i.qty}` : ''}</span><span className="block text-xs sig-muted truncate">S/N {i.units.map(u => u.serial).join(', ') || '—'}</span></span><span className="tnum shrink-0">{money(i.price * i.qty * s.days)}</span></li>
             ))}
           </ul>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 border-t sig-line pt-2 tnum"><span>Итого <b>{money(s.total)}</b></span><span>Залог <b>{money(s.deposit)}</b></span><span className="sig-muted">Оплачено {money(s.paid)}</span></div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 border-t sig-line pt-2 tnum"><span>Итого <b>{money(s.total)}</b></span><span className="sig-muted">Оплачено {money(s.paid)}</span></div>
           <button type="button" onClick={() => setShowTerms(v => !v)} className="flex items-center gap-2 text-left font-medium mt-1"><FileText className="size-4 text-[#c8640a]" />Условия аренды · версия {version}<ChevronDown className={cx('size-4 ml-auto transition-transform', showTerms && 'rotate-180')} /></button>
           {showTerms && <div className="text-xs leading-relaxed whitespace-pre-line sig-muted max-h-48 overflow-y-auto pr-1">{terms}</div>}
           <label className="flex items-start gap-3 rounded-xl sig-soft p-3 cursor-pointer select-none">
