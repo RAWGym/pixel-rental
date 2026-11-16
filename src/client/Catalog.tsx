@@ -24,13 +24,22 @@ export function matchProduct(p: { name: string; brand: string; kind: string }, q
   return n.split(/\s+/).filter(Boolean).every(w => hay.includes(w.replace(/[-\s]/g, '')))
 }
 
+/** товары без бренда хранятся с brand = 'Pixel' — в фильтре это «Другие» */
+const OTHER = 'Pixel'
+const brandLabel = (b: string) => (b === OTHER ? 'Другие' : b)
+const slug = (b: string) => b.toLowerCase().replace(/[^a-z0-9]+/g, '')
+/** ?tab=catalog&cat=cameras&brand=sony,canon — фильтр переживает обновление страницы и делится ссылкой */
+const urlState = () => { try { const u = new URLSearchParams(location.search); return { cat: u.get('cat') as CategoryId | null, brand: (u.get('brand') ?? '').split(',').filter(Boolean) } } catch { return { cat: null, brand: [] as string[] } } }
+
 export function Catalog() {
   const route = useRoute()
   const products = useStore(s => s.products), bookings = useStore(s => s.bookings), units = useStore(s => s.units), city = useStore(s => s.city), range = useStore(s => s.range)
-  const [cat, setCat] = useState<CategoryId | 'all'>(route.params?.cat ?? 'all')
+  const init = useMemo(urlState, [])
+  const [cat, setCat] = useState<CategoryId | 'all'>(route.params?.cat ?? (init.cat && CATEGORIES.some(c => c.id === init.cat) ? init.cat : 'all'))
   const [sort, setSort] = useState<Sort>(route.params?.sort ?? 'popular')
   const [q, setQ] = useState(route.params?.q ?? '')
-  const [brands, setBrands] = useState<string[]>([])
+  const [brands, setBrands] = useState<string[]>(() => init.brand.length ? products.filter(p => init.brand.includes(slug(p.brand))).map(p => p.brand).filter((b, i, a) => a.indexOf(b) === i) : [])
+  const [moreBrands, setMoreBrands] = useState(false)
   const [price, setPrice] = useState<number | null>(null)
   const [onlyFree, setOnlyFree] = useState(false)
   const [freeToday, setFreeToday] = useState(false)
@@ -39,7 +48,18 @@ export function Catalog() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const chipsRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { setBrands([]) }, [cat])
+  const firstCat = useRef(true)
+  useEffect(() => { if (firstCat.current) { firstCat.current = false; return } setBrands([]); setMoreBrands(false) }, [cat])
+  // состояние фильтра — в адресной строке
+  useEffect(() => {
+    try {
+      const u = new URLSearchParams(location.search)
+      if (cat === 'all' && !brands.length && !u.get('cat')) return
+      u.set('tab', 'catalog'); if (cat === 'all') u.delete('cat'); else u.set('cat', cat)
+      if (brands.length) u.set('brand', brands.map(slug).join(',')); else u.delete('brand')
+      history.replaceState(history.state, '', `${location.pathname}?${u.toString().replace(/%2C/g, ',')}${location.hash}`)
+    } catch { /* noop */ }
+  }, [cat, brands])
   useEffect(() => {
     const el = chipsRef.current?.querySelector(`[data-cat="${cat}"]`) as HTMLElement | null
     el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
@@ -47,7 +67,10 @@ export function Catalog() {
 
   const pop = useMemo(() => { const m = new Map<string, number>(); for (const b of bookings) for (const i of b.items) m.set(i.productId, (m.get(i.productId) ?? 0) + 1); return m }, [bookings])
   const base = useMemo(() => products.filter(p => !p.hidden && (cat === 'all' || p.category === cat) && matchProduct(p, q)), [products, cat, q])
-  const allBrands = useMemo(() => { const m = new Map<string, number>(); for (const p of base) m.set(p.brand, (m.get(p.brand) ?? 0) + 1); return [...m.entries()].sort((a, b) => b[1] - a[1]) }, [base])
+  // бренды текущей категории (с учётом поиска): по числу позиций, «Другие» в конце
+  const allBrands = useMemo(() => { const m = new Map<string, number>(); for (const p of base) m.set(p.brand, (m.get(p.brand) ?? 0) + 1); return [...m.entries()].sort((a, b) => Number(a[0] === OTHER) - Number(b[0] === OTHER) || b[1] - a[1] || a[0].localeCompare(b[0])) }, [base])
+  const showBrandChips = cat !== 'all' && allBrands.filter(([b]) => b !== OTHER).length >= 2
+  const toggleBrand = (b: string) => { haptic(5); setBrands(brands.includes(b) ? brands.filter(x => x !== b) : [...brands, b]) }
   const list = useMemo(() => {
     let l = base.filter(p => (!brands.length || brands.includes(p.brand)) && (price === null || (p.price >= PRICE[price].min && p.price < PRICE[price].max)))
     if (onlyFree) { const m = availMap(units, bookings, city, range.start, range.end); l = l.filter(p => (m.get(p.id)?.free ?? 0) > 0) }
@@ -86,7 +109,7 @@ export function Catalog() {
       <div><div className="label mb-2">Бренд</div>
         <div className="flex gap-2 flex-wrap">{allBrands.map(([b, n]) => (
           <button key={b} onClick={() => setBrands(brands.includes(b) ? brands.filter(x => x !== b) : [...brands, b])} className={cx('press h-9 px-3.5 rounded-full text-sm', brands.includes(b) ? 'bg-fg text-bg font-medium' : 'bg-surface-2 text-fg/85')}>
-            {b} <span className="text-xs opacity-50 tnum">{n}</span>
+            {brandLabel(b)} <span className="text-xs opacity-50 tnum">{n}</span>
           </button>))}
         </div>
       </div>
@@ -143,6 +166,23 @@ export function Catalog() {
         ))}
       </div>
 
+      {showBrandChips && (() => {
+        const LIMIT = 9
+        const visible = moreBrands ? allBrands : allBrands.slice(0, LIMIT)
+        const chip = (on: boolean) => cx('press shrink-0 h-9 px-3.5 rounded-full text-sm whitespace-nowrap flex items-center gap-1.5 transition-colors duration-200', on ? 'bg-fg text-bg font-medium' : 'bg-surface text-fg/85 hover:text-fg')
+        return (
+          <div role="group" aria-label="Бренды" className="fade-in flex gap-2 overflow-x-auto scrollbar-none -mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 desk:flex-wrap desk:overflow-visible">
+            <button aria-pressed={!brands.length} onClick={() => setBrands([])} className={chip(!brands.length)}>Все</button>
+            {allBrands.map(([b, n], i) => (
+              <button key={b} aria-pressed={brands.includes(b)} onClick={() => toggleBrand(b)} className={cx(chip(brands.includes(b)), i >= LIMIT && !moreBrands && !brands.includes(b) && 'desk:hidden')}>
+                {brandLabel(b)}<span className="text-xs opacity-50 tnum">{n}</span>
+              </button>
+            ))}
+            {allBrands.length > LIMIT && <button onClick={() => setMoreBrands(m => !m)} className="hidden desk:flex press h-9 px-3.5 rounded-full text-sm text-accent font-medium items-center">{moreBrands ? 'Свернуть' : `Ещё ${allBrands.length - visible.length}`}</button>}
+          </div>
+        )
+      })()}
+
       <div className="flex gap-2 flex-wrap">
         {([['today', 'Свободно сегодня', freeToday, setFreeToday], ['dates', 'Свободно на мои даты', onlyFree, setOnlyFree]] as const).map(([k, l, on, set]) => (
           <button key={k} onClick={() => { set(!on); haptic(5) }} className={cx('press h-9 px-3.5 rounded-full text-sm flex items-center gap-1.5', on ? 'bg-ok/15 text-ok font-medium' : 'bg-surface-2 text-fg/85')}>
@@ -150,6 +190,10 @@ export function Catalog() {
           </button>
         ))}
       </div>
+
+      {(brands.length > 0 || freeToday || onlyFree || price !== null) && (
+        <div className="flex items-center gap-3 text-sm -mt-1"><span className="text-muted tnum">Найдено {list.length}</span><button onClick={() => { setBrands([]); setPrice(null); setOnlyFree(false); setFreeToday(false) }} className="text-accent font-medium">Сбросить</button></div>
+      )}
 
       <div key={cat + sort} className="fade-in">
           {list.length ? (<>
