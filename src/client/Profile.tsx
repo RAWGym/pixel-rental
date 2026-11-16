@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, MapPin, HelpCircle, LogOut, ChevronRight, ChevronLeft, ShieldCheck, Sparkles, Check, Phone, Navigation, Send, RotateCcw, LayoutDashboard, Plus } from 'lucide-react'
 import { Columns3, Presentation, Clock, Download } from 'lucide-react'
@@ -255,6 +255,7 @@ export function Contacts() {
 export function Terms() {
   const back = useNav(s => s.back)
   const settings = useStore(s => s.settings)
+  const route = useRoute()
   const [open, setOpen] = useState<number | null>(0)
   const faq = [
     ['Как считаются сутки?', `Сутки идут от времени выдачи. Взяли в 18:00, вернули на следующий день до 18:00: это одни сутки. Минимальный срок ${settings.minHours} часа.`],
@@ -264,6 +265,8 @@ export function Terms() {
     ['Если что-то сломалось', 'Сразу напишите менеджеру. Мелкий износ не считаем. Серьёзные повреждения оцениваем по стоимости ремонта.'],
     ['Можно отменить или перенести?', 'Да, прямо в приложении в разделе «Брони», пока техника не выдана. Если оплатили, вернём деньги.'],
   ]
+  // с баннера: сразу открыть нужный вопрос
+  useEffect(() => { const q = route.params?.q; if (q) { const n = faq.findIndex(([t]) => t === q); if (n >= 0) setOpen(n) } }, [route.params?.q])
   return (
     <div className="flex flex-col gap-4 pb-10">
       <div className="flex items-center gap-3"><IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn><h1 className="font-display text-2xl font-semibold">Условия и FAQ</h1></div>

@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
-import b2 from '../assets/banners/banner-02.webp'
-import b4 from '../assets/banners/banner-04.webp'
-import b5 from '../assets/banners/banner-05.webp'
+import d2149 from '../assets/banners/v2/banner-discount-30-2149.webp'
+import d1200 from '../assets/banners/v2/banner-discount-30-1200.webp'
+import v2149 from '../assets/banners/v2/banner-delivery-2149.webp'
+import v1200 from '../assets/banners/v2/banner-delivery-1200.webp'
+import s2149 from '../assets/banners/v2/banner-pixel-shop-2149.webp'
+import s1200 from '../assets/banners/v2/banner-pixel-shop-1200.webp'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cx } from '../ui/kit'
+import { useNav } from '../store/nav'
 
-// Баннеры с pixelrental.kz (уменьшены до 1200px webp). Убраны просроченные акции:
-// «-40% до конца октября» (banner-01) и «-30% до конца лета» (banner-03).
-const BANNERS = [
-  { src: b5, alt: 'Скидки до 30%: чем больше броней, тем выше скидка' },
-  { src: b4, alt: 'Доступна доставка оборудования' },
-  { src: b2, alt: 'Pixel Shop. Магазин фото- и видеотехники' },
+// Баннеры 2149×732 (исходники в brand/banners-v2, прошлые в brand/banners-archive); два размера WebP для srcset
+const BANNERS: { src: string; big: string; alt: string; open?: () => void }[] = [
+  { src: d1200, big: d2149, alt: 'Скидки до 30%', open: () => useNav.getState().go('terms', { q: 'Есть ли скидки за срок?' }) },
+  { src: v1200, big: v2149, alt: 'Доступна доставка оборудования', open: () => useNav.getState().go('terms', { q: 'Доставка' }) },
+  { src: s1200, big: s2149, alt: 'Pixel Shop. Магазин фото-видео техники' },
 ]
 const AUTO_MS = 5000
 
@@ -58,10 +61,15 @@ export function Banners() {
   return (
     <section aria-roledescription="carousel" aria-label="Акции" className="relative -mb-3 w-full">
       <div ref={ref} onTouchStart={hold} onTouchEnd={release} onTouchCancel={release} onPointerDown={hold} onPointerUp={release}
-        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none rounded-2xl bg-surface overscroll-x-contain">
+        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none rounded-2xl bg-[#0b0b0b] overscroll-x-contain">
         {BANNERS.map((b, i) => (
-          <div key={b.src} className="snap-center snap-always shrink-0 w-full aspect-[3/1]" aria-roledescription="slide" aria-label={`${i + 1} из ${BANNERS.length}`}>
-            <img src={b.src} alt={b.alt} draggable={false} decoding="async" loading={i === 0 ? 'eager' : 'lazy'} {...(i === 0 ? { fetchPriority: 'high' as const } : {})} className="size-full object-cover" />
+          <div key={b.src} className="snap-center snap-always shrink-0 w-full aspect-[2149/732]" aria-roledescription="slide" aria-label={`${i + 1} из ${BANNERS.length}`}>
+            {/* картинка с собственной рамкой: соотношение контейнера = соотношению файла, без обрезки */}
+            {(() => {
+              const img = <img src={b.src} srcSet={`${b.src} 1200w, ${b.big} 2149w`} sizes="(min-width: 64rem) 90vw, 100vw" width={2149} height={732} alt={b.alt} draggable={false} decoding="async"
+                loading={i === 0 ? 'eager' : 'lazy'} {...(i === 0 ? { fetchPriority: 'high' as const } : {})} className="size-full object-cover" />
+              return b.open ? <button type="button" onClick={b.open} className="block size-full" aria-label={b.alt}>{img}</button> : img
+            })()}
           </div>
         ))}
       </div>
