@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Plus, Phone, Check, Truck, Store, X as XIcon, Trash2, Wallet } from 'lucide-react'
+import { supabaseConfigured, staffCreateBooking } from '../data/supabase'
 import { useStore } from '../store/store'
 import { PageHead, NoAccess, useAdminNav } from './Admin'
 import { Badge, Button, Sheet, Field, cx, toast, ProductArt, Stepper } from '../ui/kit'
@@ -179,7 +180,16 @@ function CreateBooking({ open, onClose, onCreated }: { open: boolean; onClose: (
   const okCust = custId || (newCust.name && newCust.phone.replace(/\D/g, '').length >= 10)
   const ok = okCust && lineItems.length && lineItems.every(l => l.free >= l.qty) && end > start
 
-  const create = () => {
+  const create = async () => {
+    // общая база: бронь создаёт сервер (подбор единиц и защита от двойной брони)
+    if (supabaseConfigured) {
+      const r = await staffCreateBooking({ customerId: custId, newName: newCust.name, newPhone: newCust.phone, city, start, end, items: lineItems.map(l => ({ productId: l.id, qty: l.qty })) })
+      if (!r.ok) { toast(r.error, { tone: 'bad' }); return }
+      toast(`Бронь ${r.data.code} создана`)
+      setLines([]); setCustId(null); setCustQ(''); setNewCust({ name: '', phone: '' })
+      onCreated(r.data.id)
+      return
+    }
     const s = useStore.getState()
     let cid = custId
     let cs = s.customers

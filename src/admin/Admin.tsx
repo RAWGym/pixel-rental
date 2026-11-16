@@ -6,6 +6,8 @@ import { Logo, cx, Toasts, Button, Badge } from '../ui/kit'
 import type { Permission } from '../data/types'
 import { Dashboard } from './Dashboard'
 import { CommandPalette, BellButton, useAdmTheme } from './Chrome'
+import { supabaseConfigured, initStaffAuth, useStaffAuth, staffSignOut } from '../data/supabase'
+import { StaffLogin, StaffSetPassword, StaffPending, StaffLoading } from './StaffLogin'
 import { BookingsAdmin } from './BookingsAdmin'
 import { CalendarAdmin } from './CalendarAdmin'
 import { ProductsAdmin } from './ProductsAdmin'
@@ -82,7 +84,15 @@ export function AdminApp() {
   const me = staff.find(s => s.id === staffId)
   const role = roles.find(r => r.id === me?.roleId)
   useEffect(() => { const first = NAV.find(n => can(n.perm)); if (me && !can(NAV.find(n => n.id === page)!.perm) && first) go(first.id) }, [staffId])
-  if (!me) return <Login />
+  const auth = useStaffAuth()
+  useEffect(() => { if (supabaseConfigured) initStaffAuth() }, [])
+  if (supabaseConfigured) {
+    // общая база: вход по email/паролю, роль — из таблицы staff
+    if (!auth.ready) return <StaffLoading />
+    if (auth.recovery) return <StaffSetPassword />
+    // без настоящей сессии Supabase админка закрыта, даже если в браузере остался демо-вход
+    if (!auth.email || auth.pendingRole || !me) return auth.email && auth.pendingRole ? <StaffPending /> : <StaffLogin />
+  } else if (!me) return <Login />
   const allowed = NAV.filter(n => can(n.perm))
   const badge = (id: AdminPage) => id === 'leads' ? leads.filter(l => l.status === 'new').length : id === 'bookings' ? bookings.filter(b => b.status === 'new').length : 0
   const Page = { dashboard: Dashboard, bookings: BookingsAdmin, calendar: CalendarAdmin, products: ProductsAdmin, leads: LeadsAdmin, customers: CustomersAdmin, staff: StaffAdmin, settings: SettingsAdmin, audit: AuditAdmin }[page]
@@ -104,7 +114,7 @@ export function AdminApp() {
       <div className="mt-auto rounded-xl bg-surface-2 p-3 flex items-center gap-3">
         <span className="size-9 grid place-items-center rounded-lg font-semibold text-sm shrink-0" style={{ background: `${role?.color}22`, color: role?.color }}>{me.name.split(' ').map(w => w[0]).join('')}</span>
         <span className="flex-1 min-w-0"><span className="block text-sm font-medium truncate">{me.name}</span><span className="block text-xs" style={{ color: role?.color }}>{role?.name}</span></span>
-        <button aria-label="Выйти" title="Выйти" onClick={staffLogout} className="size-8 grid place-items-center rounded-lg hover:bg-surface-3 text-muted"><LogOut className="size-4" /></button>
+        <button aria-label="Выйти" title="Выйти" onClick={() => (supabaseConfigured ? staffSignOut() : staffLogout())} className="size-8 grid place-items-center rounded-lg hover:bg-surface-3 text-muted"><LogOut className="size-4" /></button>
       </div>
       <button onClick={() => { (window as any).__pxLeaveAdmin?.() }} className="text-xs text-muted hover:text-fg flex items-center gap-1.5 px-3 py-2"><ArrowLeft className="size-3.5" />Клиентское приложение</button>
     </div>
@@ -179,7 +189,7 @@ export function AdminApp() {
             ))}
             <div className="h-px bg-line my-1" />
             <button onClick={() => { (window as any).__pxLeaveAdmin?.() }} className="w-full flex items-center gap-3 h-10 px-2.5 rounded-xl text-sm hover:bg-surface-3"><ArrowLeft className="size-4 text-muted" />Клиентское приложение</button>
-            <button onClick={staffLogout} className="w-full flex items-center gap-3 h-10 px-2.5 rounded-xl text-sm hover:bg-surface-3 text-bad"><LogOut className="size-4" />Выйти</button>
+            <button onClick={() => (supabaseConfigured ? staffSignOut() : staffLogout())} className="w-full flex items-center gap-3 h-10 px-2.5 rounded-xl text-sm hover:bg-surface-3 text-bad"><LogOut className="size-4" />Выйти</button>
           </div>
         </>
       )}

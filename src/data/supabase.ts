@@ -89,6 +89,7 @@ export async function hydrate() {
   }
   // чужие брони не видны: для расчёта «свободно / занято до …» берём обезличенные периоды занятости
   if (!patch.staffId) {
+    patch.staffId = null; patch.staff = []
     const { data: busy } = await c.rpc('busy_periods', { p_from: iso(Date.now() - 7 * 864e5), p_to: iso(Date.now() + 120 * 864e5) })
     const mine: Booking[] = patch.bookings ?? []
     const mineUnits = new Set(mine.flatMap(b => b.items.flatMap(i => i.unitIds)))
@@ -242,3 +243,98 @@ export function mirrorStoreWrites() {
   wrap('updateSettings', async () => { const x = st().settings; warn((await c.from('settings').update({ tiers: x.tiers, delivery_fee: x.deliveryFee, deposit_for_new: x.depositForNew, night_fee: x.nightFee, min_hours: x.minHours, points: x.points }).eq('id', 1)).error) })
   wrap('log', async (action: string, target?: string) => warn((await c.from('audit_log').insert({ staff_id: st().staffId, action, target: target ?? null })).error))
 }
+
+/* ---------- вход сотрудников (email + пароль) ---------- */
+import { create } from 'zustand'
+/** recovery — пришли по ссылке «сбросить пароль»; pendingRole — аккаунт есть, но роль ещё не выдана */
+export const useStaffAuth = create<{ ready: boolean; recovery: boolean; email: string | null; pendingRole: boolean }>(() => ({ ready: false, recovery: false, email: null, pendingRole: false }))
+
+let authInit = false
+export function initStaffAuth() {
+  if (authInit || !supabaseConfigured) return
+  authInit = true
+  const c = client()
+  c.auth.getSession().then(async ({ data }) => {
+    useStaffAuth.setState({ email: data.session?.user.email ?? null })
+    if (data.session?.user.email) await afterStaffSignIn()
+    useStaffAuth.setState({ ready: true })
+  })
+  c.auth.onAuthStateChange((ev, session) => {
+    if (ev === 'PASSWORD_RECOVERY') useStaffAuth.setState({ recovery: true })
+    if (ev === 'SIGNED_OUT') { useStaffAuth.setState({ email: null, pendingRole: false }); useStore.setState({ staffId: null }) }
+    if (ev === 'SIGNED_IN') useStaffAuth.setState({ email: session?.user.email ?? null })
+  })
+}
+
+async function afterStaffSignIn() {
+  await hydrate()
+  const isStaff = !!st().staffId
+  useStaffAuth.setState({ pendingRole: !isStaff })
+  if (isStaff) startRealtime()
+}
+
+export async function staffSignIn(email: string, password: string): Promise<Result<null>> {
+  const { error } = await client().auth.signInWithPassword({ email: email.trim(), password })
+  if (error) return fail(error.message === 'Invalid login credentials' ? { message: 'Неверный email или пароль' } : error)
+  await afterStaffSignIn()
+  return ok(null)
+}
+export async function staffSignUp(email: string, password: string, name: string): Promise<Result<{ confirm: boolean }>> {
+  const redirect = `${location.origin}/admin`
+  const { data, error } = await client().auth.signUp({ email: email.trim(), password, options: { data: { name: name.trim() }, emailRedirectTo: redirect } })
+  if (error) return fail(error)
+  if (data.session) await afterStaffSignIn()
+  return ok({ confirm: !data.session })
+}
+export async function staffResetPassword(email: string): Promise<Result<null>> {
+  const { error } = await client().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/admin` })
+  return error ? fail(error) : ok(null)
+}
+export async function staffSetPassword(password: string): Promise<Result<null>> {
+  const { error } = await client().auth.updateUser({ password })
+  if (error) return fail(error)
+  useStaffAuth.setState({ recovery: false })
+  await afterStaffSignIn()
+  return ok(null)
+}
+export async function staffSignOut() {
+  stopRealtime()
+  await client().auth.signOut()
+  useStore.setState({ staffId: null })
+}
+
+/** бронь из админки: подбор единиц и защита от двойной брони — в базе */
+export async function staffCreateBooking(d: { customerId: string | null; newName?: string; newPhone?: string; city: string; start: number; end: number; items: { productId: string; qty: number }[]; source?: string }): Promise<Result<Booking>> {
+  const c = client()
+  const { data, error } = await c.rpc('staff_create_booking', {
+    p_customer_id: d.customerId, p_new_name: d.newName ?? null, p_new_phone: d.newPhone ?? null, p_city: d.city,
+    p_start: iso(d.start), p_end: iso(d.end), p_items: d.items.map(i => ({ product_id: i.productId, qty: i.qty })), p_source: d.source ?? 'phone',
+  })
+  if (error) return fail(error)
+  const [{ data: full }, { data: cust }] = await Promise.all([
+    c.from('bookings').select(BOOKING_SELECT).eq('id', (data as any).id).single(),
+    c.from('customers').select('*').eq('id', (data as any).customer_id).single(),
+  ])
+  const b = toBooking(full ?? data)
+  useStore.setState(s => ({ bookings: [b, ...s.bookings.filter(x => x.id !== b.id)], customers: cust && !s.customers.some(x => x.id === cust.id) ? [toCustomer(cust), ...s.customers] : s.customers }))
+  return ok(b)
+}
+
+/* ---------- живые обновления ---------- */
+let channel: ReturnType<SupabaseClient['channel']> | null = null
+function startRealtime() {
+  if (channel) return
+  const c = client()
+  const upsert = <T extends { id: string }>(key: 'bookings' | 'leads' | 'customers', item: T) =>
+    useStore.setState(s => ({ [key]: [item, ...(s[key] as any[]).filter(x => x.id !== item.id)] } as any))
+  channel = c.channel('px-admin')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, async p => {
+      const id = (p.new as any)?.id; if (!id) return
+      const { data } = await c.from('bookings').select(BOOKING_SELECT).eq('id', id).maybeSingle()
+      if (data) upsert('bookings', toBooking(data))
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, p => { if ((p.new as any)?.id) upsert('leads', toLead(p.new)) })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, p => { if ((p.new as any)?.id) upsert('customers', toCustomer(p.new)) })
+    .subscribe()
+}
+function stopRealtime() { if (channel) { client().removeChannel(channel); channel = null } }

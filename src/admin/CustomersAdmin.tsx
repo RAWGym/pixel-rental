@@ -6,6 +6,7 @@ import { Badge, Button, Sheet, Field, Toggle, cx, toast } from '../ui/kit'
 import { money, dShort, relTime } from '../lib/format'
 import { verificationOf, VERIFICATION_LABEL, type Customer } from '../data/types'
 import { api } from '../data/api'
+import { supabaseConfigured, scanUrls } from '../data/supabase'
 import { STATUS_ADMIN } from './BookingsAdmin'
 
 export function CustomersAdmin() {
@@ -114,6 +115,9 @@ function ReviewSheet({ id, onClose }: { id: string | null; onClose: () => void }
   const [reject, setReject] = useState(false)
   const [reason, setReason] = useState('')
   const [zoom, setZoom] = useState<string | null>(null)
+  // общая база: сканы лежат в закрытом хранилище — берём ссылки на 10 минут
+  const [remote, setRemote] = useState<{ front?: string; back?: string }>({})
+  useEffect(() => { setRemote({}); if (id && supabaseConfigured) scanUrls(id).then(setRemote).catch(() => {}) }, [id])
   useEffect(() => { setReject(false); setReason('') }, [id])
   if (!c) return <Sheet open={false} onClose={onClose}>{null}</Sheet>
   const waiting = bookings.filter(b => b.customerId === c.id && b.awaitingVerification).length
@@ -136,7 +140,7 @@ function ReviewSheet({ id, onClose }: { id: string | null; onClose: () => void }
           ))}
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
-          {[['Лицевая сторона', c.idFront], ['Обратная сторона', c.idBack]].map(([l, src]) => (
+          {[['Лицевая сторона', c.idFront ?? remote.front], ['Обратная сторона', c.idBack ?? remote.back]].map(([l, src]) => (
             <figure key={l} className="flex flex-col gap-1.5 min-w-0">
               <figcaption className="text-xs text-muted">{l}</figcaption>
               {src ? <button onClick={() => setZoom(src!)} className="block"><img src={src} alt={l} className="w-full aspect-[1.585/1] object-cover rounded-xl bg-surface-2" /></button>
