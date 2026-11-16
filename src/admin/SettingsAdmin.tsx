@@ -44,7 +44,7 @@ export function SettingsAdmin() {
   const card = 'rounded-2xl bg-surface border border-line p-4 flex flex-col gap-3'
   return (
     <div className="flex flex-col gap-4 max-w-4xl">
-      <PageHead title="Настройки" sub="Изменения сразу видны клиентам в приложении" />
+      <PageHead title="Настройки" />
       <div className="grid md:grid-cols-2 gap-4">
         <section className={card}>
           <div className="font-semibold">Скидки за срок аренды</div>
@@ -79,7 +79,8 @@ export function SettingsAdmin() {
         {(['almaty', 'astana'] as CityId[]).map(c => { const p = settings.points[c]; const set = (patch: any) => updateSettings({ points: { ...settings.points, [c]: { ...p, ...patch } } }); return (
           <section key={c} className={card}>
             <div className="font-semibold">Точка: {c === 'almaty' ? 'Алматы' : 'Астана'}</div>
-            <Field label="Адрес"><input id={`pt-a-${c}`} className="field" value={p.address} onChange={e => set({ address: e.target.value })} /></Field>
+            <div className="grid grid-cols-[1fr_auto] gap-2"><Field label="Адрес"><input id={`pt-a-${c}`} className="field" value={p.address} onChange={e => set({ address: e.target.value })} /></Field>
+            <Field label="Вывеска"><input id={`pt-n-${c}`} className="field w-36" value={p.name ?? ''} onChange={e => set({ name: e.target.value || undefined })} placeholder="Pixel Shop" /></Field></div>
             <Field label="Режим работы (текст)"><input id={`pt-h-${c}`} className="field" value={p.hours} onChange={e => set({ hours: e.target.value })} /></Field>
             <div className="grid grid-cols-3 gap-2">
               <Field label="С, ч"><input id={`pt-o-${c}`} type="number" min={0} max={23} className="field tnum" value={p.open} onChange={e => set({ open: Number(e.target.value) })} /></Field>
@@ -105,9 +106,9 @@ export function AuditAdmin() {
   const { audit, staff } = useStore()
   return (
     <div className="max-w-3xl">
-      <PageHead title="Журнал действий" sub="Кто и что менял в админке" />
+      <PageHead title="Журнал действий" />
       <div className="rounded-2xl bg-surface divide-y divide-line">
-        {audit.map(a => <div key={a.id} className="flex items-center gap-3 px-4 py-3 text-sm"><span className="w-28 shrink-0 text-xs text-muted">{dShort(a.at)}, {hm(a.at)}</span><span className="w-32 shrink-0 font-medium truncate">{staff.find(s => s.id === a.staffId)?.name.split(' ')[0] ?? '—'}</span><span className="flex-1 min-w-0 truncate">{a.action}{a.target && <span className="text-muted"> · {a.target}</span>}</span></div>)}
+        {audit.map(a => <div key={a.id} className="flex items-center gap-3 px-4 py-3 text-sm"><span className="w-28 shrink-0 text-xs text-muted">{dShort(a.at)}, {hm(a.at)}</span><span className="w-32 shrink-0 font-medium truncate">{staff.find(s => s.id === a.staffId)?.name.split(' ')[0] ?? '-'}</span><span className="flex-1 min-w-0 truncate">{a.action}{a.target && <span className="text-muted"> · {a.target}</span>}</span></div>)}
         {!audit.length && <div className="p-10 text-center text-muted">Пока пусто. Действия сотрудников появятся здесь.</div>}
       </div>
     </div>

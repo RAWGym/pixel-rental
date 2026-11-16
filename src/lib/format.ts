@@ -1,5 +1,7 @@
 const nf = new Intl.NumberFormat('ru-RU')
 // неразрывные пробелы: цена никогда не переносится на две строки
+/** адрес и вывеска: «ул. Толе би, 174 · Pixel Shop» */
+export const placeLine = (p: { address: string; name?: string }) => (p.name ? `${p.address} · ${p.name}` : p.address)
 export const money = (n: number) => `${nf.format(Math.round(n)).replace(/\s/g, ' ')} ₸`
 export const num = (n: number) => nf.format(Math.round(n))
 
@@ -25,8 +27,8 @@ export const daysWord = (n: number) => `${n} ${plural(n, 'сутки', 'суто
 
 export function rangeLabel(s: number, e: number) {
   const a = new Date(s), b = new Date(e)
-  if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()} ${MONTHS[b.getMonth()]}`
-  return `${dShort(s)} – ${dShort(e)}`
+  if (a.getMonth() === b.getMonth()) return `${a.getDate()}-${b.getDate()} ${MONTHS[b.getMonth()]}`
+  return `${dShort(s)} - ${dShort(e)}`
 }
 
 export function relTime(t: number) {

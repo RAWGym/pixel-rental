@@ -16,7 +16,7 @@ const CHUNK = 24
 const POPULAR_Q = ['FX3', 'Петлички', 'Ronin', 'Aputure', 'Дрон', 'Sony 35mm', 'V-mount']
 type Sort = 'popular' | 'new' | 'cheap' | 'expensive'
 const SORTS: { value: Sort; label: string }[] = [{ value: 'popular', label: 'Популярные' }, { value: 'new', label: 'Новые' }, { value: 'cheap', label: 'Дешевле' }, { value: 'expensive', label: 'Дороже' }]
-const PRICE: { label: string; min: number; max: number }[] = [{ label: 'До 3 000', min: 0, max: 3000 }, { label: '3–10 тыс', min: 3000, max: 10000 }, { label: '10+ тыс', min: 10000, max: 1e9 }]
+const PRICE: { label: string; min: number; max: number }[] = [{ label: 'До 3 000', min: 0, max: 3000 }, { label: '3-10 тыс', min: 3000, max: 10000 }, { label: '10+ тыс', min: 10000, max: 1e9 }]
 
 export function matchProduct(p: { name: string; brand: string; kind: string; specs?: string[] }, q: string) {
   const n = normalizeQuery(q)
@@ -225,7 +225,7 @@ export function Catalog() {
 
       <div key={cat + sort} className="fade-in">
           {list.length ? (<>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 desk:grid-cols-3 xl:grid-cols-4 wide:grid-cols-5 ultra:grid-cols-6 gap-3">
+            <div className="stagger grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 desk:grid-cols-3 xl:grid-cols-4 wide:grid-cols-5 ultra:grid-cols-6 gap-3">
               {list.slice(0, shown).map(p => <ProductCard key={p.id} p={p} lazy />)}
             </div>
             {more && <div ref={sentinel} className="h-px" aria-hidden />}

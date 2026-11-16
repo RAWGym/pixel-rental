@@ -19,7 +19,7 @@ export const currentTemplate = (s: Settings): ContractTemplate => {
 export function buildSnapshot(b: Booking, c: Customer | undefined, products: Product[], units: Unit[], unitIds?: Record<string, string[]>): ContractSnapshot {
   return {
     code: b.code, city: b.city, supplier: 'Pixel Rental',
-    customer: { id: c?.id ?? b.customerId, name: c?.name ?? '—', phone: c?.phone ?? '', iin: c?.iin ?? null, verification: c?.verification ?? (c?.verified ? 'verified' : 'none') },
+    customer: { id: c?.id ?? b.customerId, name: c?.name ?? '-', phone: c?.phone ?? '', iin: c?.iin ?? null, verification: c?.verification ?? (c?.verified ? 'verified' : 'none') },
     start: b.start, end: b.end, days: b.days,
     items: b.items.map(i => {
       const p = products.find(x => x.id === i.productId)

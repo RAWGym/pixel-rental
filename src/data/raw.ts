@@ -236,11 +236,11 @@ Manfrotto 504HD (с дефектом)|6000|1
 Микрофонная стойка Rode PSA1|2500|s
 Штатив E-Image|4000|1`,
 cables: `Переходник Boya для iPhone|500|s
-XLR – XLR 1,5 м|500|s
-XLR – XLR 3 м|750|s
-XLR – XLR 7,5 м|1000|s
-D-Tap – DC|800|s
-HDMI – HDMI 55 см|800|1`,
+XLR - XLR 1,5 м|500|s
+XLR - XLR 3 м|750|s
+XLR - XLR 7,5 м|1000|s
+D-Tap - DC|800|s
+HDMI - HDMI 55 см|800|1`,
 }
 
 export const NEW_ITEMS = [

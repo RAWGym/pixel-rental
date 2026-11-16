@@ -26,18 +26,18 @@ npm run dev          # http://localhost:5173
 
 ```bash
 npm run build:web    # раскладывает фото, проверяет типы, собирает dist-web/, готовит sw.js
-npm run preview:web  # http://localhost:4173 — проверить сборку локально
+npm run preview:web  # http://localhost:4173: проверить сборку локально
 ```
 
 `build:web` делает:
-1. `scripts/split-photos.mjs` — миниатюры товаров из `src/data/photoData.ts` → `public/photos/*.webp`, индекс путей → `src/data/photoIndex.ts`;
-2. `tsc -b` — проверка типов;
-3. `vite build --mode web` — сборка в `dist-web/` (админка и графики — отдельный чанк, грузится только сотрудникам);
-4. `scripts/post-web.mjs` — версия кэша и список офлайн-файлов в `sw.js`.
+1. `scripts/split-photos.mjs`: миниатюры товаров из `src/data/photoData.ts` → `public/photos/*.webp`, индекс путей → `src/data/photoIndex.ts`;
+2. `tsc -b`: проверка типов;
+3. `vite build --mode web`: сборка в `dist-web/` (админка и графики: отдельный чанк, грузится только сотрудникам);
+4. `scripts/post-web.mjs`: версия кэша и список офлайн-файлов в `sw.js`.
 
 ## Деплой на Vercel
 
-Настройки уже лежат в `vercel.json` (команда сборки, папка `dist-web`, SPA-маршруты, кэш: `/assets` и `/photos` — навсегда, `sw.js` и `index.html` — без кэша, заголовки безопасности).
+Настройки уже лежат в `vercel.json` (команда сборки, папка `dist-web`, SPA-маршруты, кэш: `/assets` и `/photos`: навсегда, `sw.js` и `index.html`: без кэша, заголовки безопасности).
 
 **Через сайт Vercel:** Add New → Project → импортировать этот репозиторий → Deploy. Фреймворк выбирать не нужно.
 
@@ -49,7 +49,7 @@ vercel          # превью
 vercel --prod   # продакшн
 ```
 
-Переменные окружения (Vercel → Settings → Environment Variables) — см. `.env.example`.
+Переменные окружения (Vercel → Settings → Environment Variables): см. `.env.example`.
 
 ## База данных (Supabase)
 
@@ -76,6 +76,6 @@ scripts/       подготовка фото и сборки
 
 ## Устройства
 
-- Мобильный вид (< 1024 px) — как приложение: нижняя навигация, жесты, safe-area.
-- От 1024 px — сайт: верхнее меню, фильтры каталога слева, футер.
+- Мобильный вид (< 1024 px): как приложение: нижняя навигация, жесты, safe-area.
+- От 1024 px: сайт: верхнее меню, фильтры каталога слева, футер.
 - Слабые устройства (≤ 4 ядер, ≤ 3 ГБ, режим экономии трафика) получают облегчённые анимации; системная настройка «уменьшить движение» отключает их.

@@ -306,7 +306,7 @@ export const useStore = create<State>()(persist((set, get) => ({
       items: unitIds ? b.items.map(i => ({ ...i, unitIds: unitIds[i.productId] ?? i.unitIds })) : b.items,
       history: [...b.history, { at: contract.signedAt, by: who, text: 'Выдана клиенту, договор подписан' }],
     }) })
-    get().log(contract.verifiedOverride ? 'Выдача по договору (без проверенного профиля — подтвердил сотрудник)' : 'Выдача по договору', contract.code)
+    get().log(contract.verifiedOverride ? 'Выдача по договору (без проверенного профиля, разрешил сотрудник)' : 'Выдача по договору', contract.code)
   },
   returnBooking: (id, check, note) => {
     const s = get()

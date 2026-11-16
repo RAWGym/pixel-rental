@@ -381,7 +381,7 @@ export async function clientEmailSignIn(email: string, password: string): Promis
 }
 export async function clientEmailSignUp(email: string, password: string): Promise<Result<{ confirm: boolean }>> {
   const { data, error } = await client().auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: `${location.origin}/` } })
-  if (error) return fail(error.message.includes('already registered') ? { message: 'Такая почта уже зарегистрирована — войдите' } : error)
+  if (error) return fail(error.message.includes('already registered') ? { message: 'Такая почта уже зарегистрирована. Войдите' } : error)
   return ok({ confirm: !data.session })
 }
 export async function clientResetPassword(email: string): Promise<Result<null>> {

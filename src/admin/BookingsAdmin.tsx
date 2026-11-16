@@ -113,7 +113,7 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
           <div className="rounded-xl bg-surface-2 p-3 text-sm flex items-center gap-2">{b.deliveryType === 'delivery' ? <><Truck className="size-4 text-accent" />Доставка: {b.address}</> : <><Store className="size-4 text-accent" />Самовывоз, {b.city === 'almaty' ? 'Алматы' : 'Астана'}</>}</div>
           {b.comment && <div className="rounded-xl border border-line p-3 text-sm"><div className="label mb-1">Комментарий клиента</div>{b.comment}</div>}
           <div className="grid grid-cols-2 gap-2">
-            <Field label="Менеджер"><select id="bk-manager" disabled={!edit} className="field h-10 py-0" value={b.managerId ?? ''} onChange={e => patchBooking(b.id, { managerId: e.target.value }, `Ответственный: ${staff.find(s => s.id === e.target.value)?.name}`)}><option value="">—</option>{staff.filter(s => s.active).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
+            <Field label="Менеджер"><select id="bk-manager" disabled={!edit} className="field h-10 py-0" value={b.managerId ?? ''} onChange={e => patchBooking(b.id, { managerId: e.target.value }, `Ответственный: ${staff.find(s => s.id === e.target.value)?.name}`)}><option value="">-</option>{staff.filter(s => s.active).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
             <Field label="Источник"><div className="field h-10 py-0 flex items-center">{SRC[b.source]}</div></Field>
           </div>
         </div>
@@ -199,7 +199,7 @@ function CreateBooking({ open, onClose, onCreated }: { open: boolean; onClose: (
     if (!cid) { cid = uid('c'); cs = [{ id: cid, name: newCust.name, phone: newCust.phone, verified: false, blacklisted: false, createdAt: Date.now(), tags: ['Новый'] }, ...cs] }
     const items = lineItems.map(l => ({ productId: l.id, qty: l.qty, price: l.p.price, unitIds: freeUnits(s.units, s.bookings, l.id, city, start, end).slice(0, l.qty).map(u => u.id) }))
     const n = 1040 + s.bookings.length + 1
-    const b: Booking = { id: uid('b'), code: `PX-${n}`, customerId: cid, city, items, start, end, days, subtotal: pr.subtotal, discount: pr.discount, delivery: 0, total: pr.total, paid: 0, paymentStatus: 'unpaid', paymentMethod: method, deliveryType: 'pickup', status: 'confirmed', source, managerId: staffId ?? undefined, createdAt: Date.now(), history: [{ at: Date.now(), by: me?.name.split(' ')[0] ?? '—', text: 'Создана менеджером и подтверждена' }] }
+    const b: Booking = { id: uid('b'), code: `PX-${n}`, customerId: cid, city, items, start, end, days, subtotal: pr.subtotal, discount: pr.discount, delivery: 0, total: pr.total, paid: 0, paymentStatus: 'unpaid', paymentMethod: method, deliveryType: 'pickup', status: 'confirmed', source, managerId: staffId ?? undefined, createdAt: Date.now(), history: [{ at: Date.now(), by: me?.name.split(' ')[0] ?? '-', text: 'Создана менеджером и подтверждена' }] }
     useStore.setState({ bookings: [b, ...s.bookings], customers: cs })
     s.log('Создана бронь', b.code)
     toast(`Бронь ${b.code} создана`)

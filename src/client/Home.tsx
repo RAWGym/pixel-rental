@@ -12,7 +12,7 @@ import { cx, Button, haptic, toast, CatIcon } from '../ui/kit'
 import { ProductCard, DateBar, SectionTitle } from './common'
 import { Banners } from './Banners'
 import { InstallBanner } from './Install'
-import { money } from '../lib/format'
+import { placeLine, money } from '../lib/format'
 import { availMap } from '../lib/availability'
 import { byPopularity } from '../lib/popular'
 
@@ -62,8 +62,7 @@ export function Home() {
       <section className="rounded-3xl bg-surface px-4 py-5 sm:px-6 md:px-8 md:py-8 flex flex-col gap-4">
         <div>
           <div className="label mb-1.5">{hello(me?.name)}</div>
-          <h1 className="text-[clamp(22px,6vw,28px)] leading-tight font-semibold">Техника под любую съёмку<span className="text-muted"> — заберите сегодня, 24/7</span></h1>
-          <p className="text-muted mt-1.5">{products.filter(p => !p.hidden).length} позиций. Выберите даты — покажем, что свободно.</p>
+          <h1 className="text-[clamp(22px,6vw,28px)] leading-tight font-semibold">Техника под любую съёмку<span className="text-muted">. Заберите сегодня, 24/7</span></h1>
         </div>
         <div className="flex flex-col sm:flex-row gap-2.5 max-w-2xl">
           <DateBar className="flex-1 min-w-0 bg-surface-2" />
@@ -149,7 +148,7 @@ export function Home() {
       <section className="rounded-2xl bg-surface p-5 flex flex-col sm:flex-row gap-4 sm:items-center">
         <div className="flex-1">
           <div className="label mb-1.5">Точка выдачи · {city === 'almaty' ? 'Алматы' : 'Астана'}</div>
-          <div className="font-display font-semibold text-lg flex items-center gap-2"><MapPin className="size-[18px] text-muted" /> {point.address}</div>
+          <div className="font-display font-semibold text-lg flex items-center gap-2"><MapPin className="size-[18px] text-muted" /> {placeLine(point)}</div>
           <div className="text-sm text-muted mt-1 flex items-center gap-2"><Clock className="size-4" /> {point.hours}
             <span className={cx('ml-1 inline-flex items-center gap-1.5 text-xs font-semibold', openNow ? 'text-ok' : 'text-bad')}><span className={cx('size-1.5 rounded-full', openNow ? 'bg-ok' : 'bg-bad')} />{openNow ? 'Открыто' : 'Закрыто'}</span>
           </div>

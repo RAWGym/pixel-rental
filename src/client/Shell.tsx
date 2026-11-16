@@ -5,6 +5,7 @@ import { useStore } from '../store/store'
 import { useNav, RouteCtx, type Route, type RouteName } from '../store/nav'
 import { Logo, cx, Toasts, haptic } from '../ui/kit'
 import { isNative } from '../lib/native'
+import { placeLine } from '../lib/format'
 import { Home } from './Home'
 import { Catalog } from './Catalog'
 import { ProductScreen } from './Product'
@@ -43,7 +44,7 @@ function SiteFooter() {
         {(['almaty', 'astana'] as const).map(c => (
           <div key={c} className="flex flex-col gap-1.5">
             <div className="font-semibold">{c === 'almaty' ? 'Алматы' : 'Астана'}</div>
-            <div className="text-muted">{points[c].address}</div>
+            <div className="text-muted">{placeLine(points[c])}</div>
             <div className="text-muted">{points[c].hours}</div>
           </div>
         ))}
@@ -177,7 +178,9 @@ export function ClientApp() {
             {SITE_NAV.map(t => {
               const on = t.match(top?.name ?? root.name, active)
               return (
-                <button key={t.label} onClick={t.go} className={cx('relative h-9 px-3.5 rounded-lg text-sm font-medium transition-colors', on ? 'text-fg bg-surface-2' : 'text-muted hover:text-fg')}>
+                <button key={t.label} onClick={t.go} className={cx('relative h-9 px-3.5 rounded-lg text-sm font-medium transition-colors duration-200', on ? 'text-fg' : 'text-muted hover:text-fg')}>
+                  {/* активный пункт: подложка и линия переезжают к нему */}
+                  {on && <motion.span layoutId="site-nav" className="absolute inset-0 rounded-lg bg-surface-2" transition={{ type: 'spring', stiffness: 520, damping: 40 }}><span className="absolute left-3 right-3 -bottom-[9px] h-0.5 rounded-full bg-accent" /></motion.span>}
                   <span className="relative flex items-center gap-1.5">{t.label}{t.label === 'Корзина' && <span className="relative inline-block w-3 h-3"><CartCount /></span>}</span>
                 </button>
               )

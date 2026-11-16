@@ -14,7 +14,7 @@ import { refreshApp } from './Refresh'
 import { verificationOf } from '../data/types'
 import { PRESETS, resolvePreset } from '../data/presets'
 import { freeUnits } from '../lib/availability'
-import { money, num, daysWord, countdown, wd, dWithTime } from '../lib/format'
+import { placeLine, money, num, daysWord, countdown, wd, dWithTime } from '../lib/format'
 import { rentalDays } from '../lib/pricing'
 
 function Row({ icon, label, hint, onClick }: { icon: React.ReactNode; label: string; hint?: string; onClick: () => void }) {
@@ -94,17 +94,17 @@ export function ProfileScreen() {
 
       <div className="rounded-2xl bg-surface divide-y divide-line overflow-hidden">
         <Row icon={<Heart className="size-4" />} label="Избранное" hint={`${favorites.length} позиций`} onClick={() => go('favorites')} />
-        <Row icon={<Columns3 className="size-4" />} label="Сравнение" hint={compareN ? `${compareN} товара рядом` : 'Положите рядом до трёх товаров'} onClick={() => go('compare')} />
-        <Row icon={<Sparkles className="size-4" />} label="Собрать комплект под съёмку" hint="Готовые сетапы и подбор с менеджером" onClick={() => go('kit')} />
-        {inst.available && <Row icon={<Download className="size-4" />} label="Установить приложение" hint="На главный экран телефона или компьютера" onClick={inst.run} />}
-        <Row icon={<RotateCcw className="size-4" />} label="Обновить приложение" hint="Свежие данные и последняя версия" onClick={async () => { toast('Обновляем…'); await refreshApp(); toast('Готово, всё актуально') }} />
-        <Row icon={<MapPin className="size-4" />} label="Контакты и адреса" hint="Алматы, Астана" onClick={() => go('contacts')} />
+        <Row icon={<Columns3 className="size-4" />} label="Сравнение" hint={compareN ? `${compareN} из 3` : undefined} onClick={() => go('compare')} />
+        <Row icon={<Sparkles className="size-4" />} label="Собрать комплект под съёмку" onClick={() => go('kit')} />
+        {inst.available && <Row icon={<Download className="size-4" />} label="Установить приложение" onClick={inst.run} />}
+        <Row icon={<RotateCcw className="size-4" />} label="Обновить приложение" onClick={async () => { toast('Обновляем…'); await refreshApp(); toast('Готово, всё актуально') }} />
+        <Row icon={<MapPin className="size-4" />} label="Контакты и адреса" onClick={() => go('contacts')} />
         <Row icon={<HelpCircle className="size-4" />} label="Условия аренды и FAQ" onClick={() => go('terms')} />
       </div>
 
       <div className="rounded-2xl bg-surface divide-y divide-line overflow-hidden">
-        <Row icon={<LayoutDashboard className="size-4" />} label="Админка для сотрудников" hint="Товары, брони, заявки, роли" onClick={() => { if (location.protocol.startsWith('http')) { history.pushState(null, '', '/admin'); dispatchEvent(new PopStateEvent('popstate')) } else location.hash = 'admin' }} />
-        <Row icon={<Presentation className="size-4" />} label="Демо-сценарий" hint="Подтверждённый профиль, брони, избранное — для презентации" onClick={() => setDemoOpen(true)} />
+        <Row icon={<LayoutDashboard className="size-4" />} label="Админка для сотрудников" onClick={() => { if (location.protocol.startsWith('http')) { history.pushState(null, '', '/admin'); dispatchEvent(new PopStateEvent('popstate')) } else location.hash = 'admin' }} />
+        <Row icon={<Presentation className="size-4" />} label="Демо-сценарий" onClick={() => setDemoOpen(true)} />
         <Row icon={<RotateCcw className="size-4" />} label="Сбросить демо-данные" onClick={() => setResetOpen(true)} />
         {me && <Row icon={<LogOut className="size-4" />} label="Выйти" onClick={() => { logout(); toast('Вы вышли') }} />}
       </div>
@@ -112,7 +112,7 @@ export function ProfileScreen() {
       </div>
       {inst.sheet}
       <Sheet open={demoOpen} onClose={() => setDemoOpen(false)} title="Демо-сценарий" footer={<Button block size="lg" onClick={() => { runDemo(); setDemoOpen(false); haptic(30); toast('Демо готово: Айдана, 3 брони, избранное и корзина'); useNav.getState().tab('home') }}><Presentation className="size-5" /> Запустить</Button>}>
-        <p className="text-muted">Данные вернутся к красивому стартовому набору: вы — подтверждённый клиент Айдана, у вас ближайшая бронь на FX3 и две прошлые, избранное, сравнение FX3 и A7 IV, в корзине готовый комплект. Всё только в этом браузере.</p>
+        <p className="text-muted">Данные вернутся к красивому стартовому набору: вы подтверждённый клиент Айдана, у вас ближайшая бронь на FX3 и две прошлые, избранное, сравнение FX3 и A7 IV, в корзине готовый комплект. Всё только в этом браузере.</p>
       </Sheet>
       <Sheet open={resetOpen} onClose={() => setResetOpen(false)} title="Сбросить демо?" footer={<Button variant="danger" block onClick={() => { resetDemo(); setResetOpen(false); toast('Данные сброшены') }}>Сбросить</Button>}>
         <p className="text-muted">Брони, заявки и изменения в админке вернутся к исходным демо-данным. Это касается только этого браузера.</p>
@@ -235,7 +235,7 @@ export function Contacts() {
             </div>
             <div className="p-4 flex flex-col gap-2">
               <div className="flex items-center justify-between"><div className="font-display font-semibold">{c === 'almaty' ? 'Алматы' : 'Астана'}</div><Badge tone={open ? 'ok' : 'bad'}>{open ? 'Открыто' : 'Закрыто'}</Badge></div>
-              <div>{p.address}</div><div className="text-sm text-muted">{p.hours}</div>
+              <div>{placeLine(p)}</div><div className="text-sm text-muted">{p.hours}</div>
               {p.phone && <div className="tnum text-sm select-all flex items-center gap-2"><Phone className="size-4 text-muted" />{p.phone}</div>}
               <a href={`https://2gis.kz/${c}/search/${encodeURIComponent(p.address)}`} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-2 text-sm font-semibold text-accent"><Navigation className="size-4" /> Открыть в 2ГИС</a>
             </div>

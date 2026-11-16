@@ -20,7 +20,8 @@ export async function actPdf(c: Contract, mode: 'download' | 'print') {
   const [{ buildActPdf }, src] = await Promise.all([import('../lib/actPdf'), sigSrc(c)])
   let png: Uint8Array | null = null
   if (src) png = src.startsWith('data:') ? dataUrlBytes(src) : new Uint8Array(await (await fetch(src)).arrayBuffer())
-  const address = useStore.getState().settings.points?.[c.snapshot.city]?.address
+  const pt = useStore.getState().settings.points?.[c.snapshot.city]
+  const address = pt ? [pt.address, pt.name].filter(Boolean).join(', ') : undefined
   const bytes = await buildActPdf(c, png, { address })
   const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }))
   if (mode === 'download') {
@@ -50,7 +51,7 @@ export function ContractBlock({ b }: { b: Booking }) {
   const [busy, setBusy] = useState<'' | 'download' | 'print'>('')
   const [voiding, setVoiding] = useState<string | null>(null)
   if (!c) {
-    if (b.status === 'issued' || b.status === 'returned') return <div className="rounded-xl border border-line p-3 text-sm text-muted flex items-center gap-2"><FileSignature className="size-4" />Выдана до появления электронных договоров — подписанного акта нет</div>
+    if (b.status === 'issued' || b.status === 'returned') return <div className="rounded-xl border border-line p-3 text-sm text-muted flex items-center gap-2"><FileSignature className="size-4" />Выдана до появления электронных договоров, подписанного акта нет</div>
     return null
   }
   const run = async (mode: 'download' | 'print') => { setBusy(mode); try { await actPdf(c, mode) } catch (e: any) { toast('Не удалось собрать PDF: ' + (e?.message ?? e)) } finally { setBusy('') } }
@@ -70,7 +71,7 @@ export function ContractBlock({ b }: { b: Booking }) {
         <span className="text-muted">Выдал</span><span className="truncate">{c.issuedByName}</span>
         <span className="text-muted">Хэш</span><span className="tnum text-xs text-muted truncate" title={c.docHash}>{c.docHash.slice(0, 16)}…</span>
       </div>
-      {c.verifiedOverride && <div className="text-xs text-warn flex items-center gap-1.5"><ShieldAlert className="size-3.5" />Выдано без проверенного профиля — подтвердил сотрудник</div>}
+      {c.verifiedOverride && <div className="text-xs text-warn flex items-center gap-1.5"><ShieldAlert className="size-3.5" />Выдано без проверенного профиля, разрешил сотрудник</div>}
       {c.status === 'void' && c.voidReason && <div className="text-xs text-bad">Причина аннулирования: {c.voidReason}</div>}
       <div className="flex flex-wrap gap-2">
         <Button variant="soft" className="h-10" disabled={!!busy} onClick={() => run('download')}><Download className="size-4" />{busy === 'download' ? 'Собираем…' : 'Скачать акт (PDF)'}</Button>

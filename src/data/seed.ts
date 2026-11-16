@@ -1,4 +1,6 @@
 import { DEFAULT_TEMPLATES } from '../lib/contract'
+/** адрес точки в Алматы: меняется здесь (демо) и в Настройках админки (общая база) */
+export const ALMATY_ADDRESS = 'ул. Толе би, 174'
 import { RAW, NEW_ITEMS } from './raw'
 import type { Product, Unit, CategoryId, Customer, Staff, Role, Booking, Lead, Settings, CityId, BookingItem, Source, PaymentMethod } from './types'
 import { hash, mulberry32 } from '../lib/rng'
@@ -65,9 +67,9 @@ const SPECS: [RegExp, string[], string?][] = [
   [/zoom h6/i, ['6 дорожек', '4 входа XLR/TRS', 'Сменные капсюли']],
   [/zoom h8/i, ['12 дорожек', 'До 6 входов XLR/TRS', 'Сенсорный экран']],
   [/sm7b/i, ['Динамический, кардиоида', 'Для подкастов и вокала', 'Нужен XLR и усилитель']],
-  [/aputure 600x/i, ['600 Вт, би-колор 2700–6500K', 'Байонет Bowens', 'Управление через Sidus Link']],
-  [/aputure 300x/i, ['350 Вт, би-колор 2700–6500K', 'Байонет Bowens']],
-  [/300c/i, ['RGBWW, 2500–7500K', 'Байонет Bowens', 'Эффекты и гели в приложении']],
+  [/aputure 600x/i, ['600 Вт, би-колор 2700-6500K', 'Байонет Bowens', 'Управление через Sidus Link']],
+  [/aputure 300x/i, ['350 Вт, би-колор 2700-6500K', 'Байонет Bowens']],
+  [/300c/i, ['RGBWW, 2500-7500K', 'Байонет Bowens', 'Эффекты и гели в приложении']],
   [/ray 660c/i, ['RGBWW, мощный осветитель', 'Широкий угол заливки']],
   [/150c/i, ['RGBWW, 150 Вт', 'Байонет Bowens']],
   [/ronin rs 4|rs 4/i, ['Нагрузка до 3 кг', 'Вертикальный режим', 'Автобаланс']],
@@ -83,9 +85,9 @@ const SPECS: [RegExp, string[], string?][] = [
 function lensSpecs(name: string): string[] {
   const s: string[] = []
   const f = name.match(/(\d{1,3})(?:\s*-\s*(\d{1,3}))?\s*mm/i)
-  if (f) s.push(`Фокусное: ${f[2] ? `${f[1]}–${f[2]}` : f[1]} мм`)
+  if (f) s.push(`Фокусное: ${f[2] ? `${f[1]}-${f[2]}` : f[1]} мм`)
   const a = name.match(/f\s*\/?\s*\.?\s*(\d+(?:[.,]\d)?)(?:\s*-\s*(\d+(?:[.,]\d)?))?/i)
-  if (a) s.push(`Диафрагма: f/${a[1].replace(',', '.')}${a[2] ? '–' + a[2] : ''}`)
+  if (a) s.push(`Диафрагма: f/${a[1].replace(',', '.')}${a[2] ? '-' + a[2] : ''}`)
   if (/sony e|e-mount|\bsony\b|zeiss|\bfe\b/i.test(name) && !/canon|ef\b/i.test(name)) s.push('Байонет: Sony E')
   else if (/\brf\b/i.test(name)) s.push('Байонет: Canon RF')
   else if (/canon|\bef\b/i.test(name)) s.push('Байонет: Canon EF')
@@ -203,8 +205,8 @@ export function buildAll(opts: { history?: boolean } = {}) {
     nightFee: 0,
     minHours: 24,
     points: {
-      almaty: { address: 'ул. Толе би, 176', hours: 'Круглосуточно', open: 0, close: 24, phone: '' },
-      astana: { address: 'ул. Бокейхана, 6', hours: '09:00–21:00, без выходных', open: 9, close: 21, phone: '' },
+      almaty: { address: ALMATY_ADDRESS, name: 'Pixel Shop', hours: 'Круглосуточно', open: 0, close: 24, phone: '' },
+      astana: { address: 'ул. Бокейхана, 6', hours: '09:00-21:00, без выходных', open: 9, close: 21, phone: '' },
     },
     contractTemplates: DEFAULT_TEMPLATES,
   }

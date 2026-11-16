@@ -68,7 +68,7 @@ export const LocalAdapter: PixelApi = {
   },
   register: async d => {
     if (!d.name.trim()) return { ok: false, error: 'Укажите имя' }
-    if (!/^\d{12}$/.test(d.iin)) return { ok: false, error: 'ИИН — 12 цифр' }
+    if (!/^\d{12}$/.test(d.iin)) return { ok: false, error: 'ИИН: 12 цифр' }
     return ok(st().register(d))
   },
   submitId: async (front, back) => { st().submitId(front, back); return ok(null) },

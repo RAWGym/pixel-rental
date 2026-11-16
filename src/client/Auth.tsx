@@ -3,7 +3,9 @@ import { ChevronLeft, Camera, Upload, RotateCcw, ShieldCheck, Check, IdCard, Clo
 import { useNav, useRoute } from '../store/nav'
 import { useMe } from '../store/store'
 import { api, DEMO_OTP } from '../data/api'
-import { supabaseConfigured, clientEmailSignIn, clientEmailSignUp, clientResetPassword, clientSetPassword } from '../data/supabase'
+// клиент Supabase грузится только при входе по почте — не утяжеляет первый экран
+const supabaseConfigured = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
+const sb = () => import('../data/supabase')
 import { verificationOf, VERIFICATION_LABEL, type Verification } from '../data/types'
 import { Button, IconBtn, Field, cx, toast, haptic } from '../ui/kit'
 
@@ -141,17 +143,17 @@ export function AuthScreen() {
   const emailSubmit = async () => {
     setErr(''); setNotice(''); setBusy(true)
     try {
-      if (emailMode === 'reset') { const r = await clientResetPassword(email); if (!r.ok) setErr(r.error); else setNotice('Если такая почта есть, мы отправили ссылку для нового пароля.'); return }
-      if (password.length < 8) { setErr('Пароль — минимум 8 символов'); return }
-      if (emailMode === 'signup') { const r = await clientEmailSignUp(email, password); if (!r.ok) setErr(r.error); else if (r.data.confirm) setNotice('Готово! Подтвердите почту по ссылке из письма, затем войдите здесь.'); else { setViaEmail(true); setStep('profile') } return }
-      const r = await clientEmailSignIn(email, password)
+      if (emailMode === 'reset') { const r = await (await sb()).clientResetPassword(email); if (!r.ok) setErr(r.error); else setNotice('Если такая почта есть, мы отправили ссылку для нового пароля.'); return }
+      if (password.length < 8) { setErr('Пароль: минимум 8 символов'); return }
+      if (emailMode === 'signup') { const r = await (await sb()).clientEmailSignUp(email, password); if (!r.ok) setErr(r.error); else if (r.data.confirm) setNotice('Готово! Подтвердите почту по ссылке из письма, затем войдите здесь.'); else { setViaEmail(true); setStep('profile') } return }
+      const r = await (await sb()).clientEmailSignIn(email, password)
       if (!r.ok) { setErr(r.error); return }
       if (r.data.customer) { haptic(20); toast(`С возвращением, ${r.data.customer.name.split(' ')[0]}`); finish() } else { setViaEmail(true); setStep('profile') }
     } finally { setBusy(false) }
   }
   const setNewPassword = async () => {
     if (password.length < 8) return setErr('Минимум 8 символов')
-    setBusy(true); const r = await clientSetPassword(password); setBusy(false)
+    setBusy(true); const r = await (await sb()).clientSetPassword(password); setBusy(false)
     if (!r.ok) return setErr(r.error)
     toast('Пароль обновлён')
     if (r.data.customer) finish(); else { setViaEmail(true); setStep('profile') }
@@ -159,7 +161,7 @@ export function AuthScreen() {
   const saveProfile = () => {
     if (viaEmail && phone.replace(/\D/g, '').length < 11) return setErr('Укажите телефон для связи')
     if (name.trim().length < 2) return setErr('Укажите имя и фамилию')
-    if (!/^\d{12}$/.test(iin)) return setErr('ИИН — 12 цифр')
+    if (!/^\d{12}$/.test(iin)) return setErr('ИИН: 12 цифр')
     setErr(''); setStep('scan')
   }
   const register = async (front?: string, backSide?: string) => {
@@ -198,7 +200,7 @@ export function AuthScreen() {
 
       {step === 'email' && (
         <form className="flex flex-col gap-4" onSubmit={e => { e.preventDefault(); emailSubmit() }}>
-          <p className="text-muted">{emailMode === 'signup' ? 'Создайте аккаунт: после подтверждения почты заполните профиль и сфотографируйте удостоверение.' : emailMode === 'reset' ? 'Пришлём ссылку — по ней вы зададите новый пароль на сайте Pixel.' : 'Войдите почтой и паролем, если регистрировались так.'}</p>
+          <p className="text-muted">{emailMode === 'signup' ? 'Создайте аккаунт: после подтверждения почты заполните профиль и сфотографируйте удостоверение.' : emailMode === 'reset' ? 'Пришлём ссылку, по ней вы зададите новый пароль на сайте Pixel.' : 'Войдите почтой и паролем, если регистрировались так.'}</p>
           <Field label="Почта"><input id="auth-email" type="email" autoFocus autoComplete="email" className="field" value={email} onChange={e => setEmail(e.target.value)} required /></Field>
           {emailMode !== 'reset' && <Field label="Пароль" hint={emailMode === 'signup' ? 'Минимум 8 символов' : undefined}><input id="auth-pass" type="password" autoComplete={emailMode === 'signup' ? 'new-password' : 'current-password'} className="field" value={password} onChange={e => setPassword(e.target.value)} required /></Field>}
           {err && <div className="text-sm text-bad">{err}</div>}
@@ -223,7 +225,7 @@ export function AuthScreen() {
 
       {step === 'code' && (
         <div className="flex flex-col gap-4">
-          <p className="text-muted">Отправили код на <span className="text-fg tnum whitespace-nowrap">{phone}</span>. В демо-версии код — <b className="text-fg tnum">{DEMO_OTP}</b>.</p>
+          <p className="text-muted">Отправили код на <span className="text-fg tnum whitespace-nowrap">{phone}</span>. В демо-версии код: <b className="text-fg tnum">{DEMO_OTP}</b>.</p>
           <Field label="Код" error={err || undefined}>
             <input id="auth-code" autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={4} className="field tnum text-center text-xl tracking-[.5em]" value={code}
               onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); setCode(v); if (v.length === 4) checkCode(v) }} />

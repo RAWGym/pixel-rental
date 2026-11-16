@@ -6,7 +6,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useStore, useMe } from '../store/store'
 import { useNav, useRoute } from '../store/nav'
 import { Button, IconBtn, Badge, Empty, ProductArt, Segmented, Field, cx, toast, Sheet, haptic } from '../ui/kit'
-import { money, dWithTime, dShort, rangeLabel, daysWord, countdown, wd, hm } from '../lib/format'
+import { placeLine, money, dWithTime, dShort, rangeLabel, daysWord, countdown, wd, hm } from '../lib/format'
 import type { Booking, BookingStatus, Contract } from '../data/types'
 
 export const STATUS: Record<BookingStatus, { label: string; tone: 'muted' | 'accent' | 'ok' | 'warn' | 'bad' | 'info' }> = {
@@ -20,9 +20,9 @@ export function LoginCard() {
   return (
     <div className="max-w-sm w-full mx-auto rounded-3xl bg-surface p-6 flex flex-col gap-4">
       <div className="size-12 grid place-items-center rounded-2xl bg-accent/12 text-accent"><CalendarCheck className="size-6" /></div>
-      <div><div className="text-xl font-semibold">Войдите по номеру</div><p className="text-sm text-muted mt-1">Покажем ваши брони и историю. Каталог, избранное и корзина доступны и без входа.</p></div>
+      <div className="text-xl font-semibold">Войдите, чтобы видеть брони</div>
       <Button block size="lg" onClick={() => go('auth')}>Войти или зарегистрироваться</Button>
-      <button className="text-sm text-muted" onClick={() => { useStore.setState({ meId: 'c1' }); toast('Вы вошли как демо-клиент') }}>Войти как демо-клиент</button>
+      {!import.meta.env.VITE_SUPABASE_URL && <button className="text-sm text-muted" onClick={() => { useStore.setState({ meId: 'c1' }); toast('Вы вошли как демо-клиент') }}>Войти как демо-клиент</button>}
     </div>
   )
 }
@@ -128,7 +128,7 @@ export function BookingDetail() {
         <div className="rounded-2xl bg-surface p-4"><div className="label mb-1">Получение</div><div className="font-semibold">{wd(b.start)}, {dShort(b.start)}</div><div className="tnum text-sm text-muted">{hm(b.start)}</div></div>
         <div className="rounded-2xl bg-surface p-4"><div className="label mb-1">Возврат</div><div className="font-semibold">{wd(b.end)}, {dShort(b.end)}</div><div className="tnum text-sm text-muted">{hm(b.end)}</div></div>
       </div>
-      <div className="rounded-2xl bg-surface p-4 flex gap-3 text-sm"><MapPin className="size-4 text-accent mt-0.5 shrink-0" /><div>{b.deliveryType === 'delivery' ? <>Доставка: <b>{b.address}</b></> : <><b>{point.address}</b><div className="text-muted">{point.hours}</div></>}</div></div>
+      <div className="rounded-2xl bg-surface p-4 flex gap-3 text-sm"><MapPin className="size-4 text-accent mt-0.5 shrink-0" /><div>{b.deliveryType === 'delivery' ? <>Доставка: <b>{b.address}</b></> : <><b>{placeLine(point)}</b><div className="text-muted">{point.hours}</div></>}</div></div>
 
       {b.contract?.status === 'signed' && <ContractCard c={b.contract} />}
       </div>

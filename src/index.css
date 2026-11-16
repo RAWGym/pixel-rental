@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Pixel Rental — спокойная тёмная студия. Оранжевый из логотипа — только для главного действия и мелких акцентов */
+/* Pixel Rental, спокойная тёмная студия. Оранжевый из логотипа, только для главного действия и мелких акцентов */
 @theme {
   --color-bg: #0E0D0C;
   --color-surface: #151413;
@@ -97,11 +97,35 @@ input, textarea, select { font: inherit; color: inherit; }
 
 /* ---------- движение: только transform и opacity ---------- */
 @keyframes px-fade { from { opacity: 0 } to { opacity: 1 } }
+/* тихое появление: прозрачность + 8 px снизу */
+@keyframes px-rise { from { opacity: 0; transform: translate3d(0, 8px, 0) } to { opacity: 1; transform: none } }
 @keyframes px-push { from { transform: translate3d(100%,0,0) } to { transform: none } }
 @keyframes px-pop { from { transform: none } to { transform: translate3d(100%,0,0) } }
 .fade-in { animation: px-fade 160ms var(--ease-ui) both; }
-/* вкладки живут в памяти; при показе — короткое проявление (анимация перезапускается при display:none → block) */
-.tab-root { animation: px-fade 120ms var(--ease-ui) both; }
+/* вкладки живут в памяти; при показе, короткое проявление (анимация перезапускается при display:none → block) */
+/* смена вкладки: тихое появление; при первой загрузке без анимации, чтобы не задерживать первый кадр */
+.nav-ready .tab-root { animation: px-rise 220ms var(--ease-ui) both; }
+/* каскад карточек каталога: первые 12, по 25 мс */
+.stagger > * { animation: px-rise 260ms var(--ease-ui) both; }
+.stagger > :nth-child(2) { animation-delay: 25ms; }
+.stagger > :nth-child(3) { animation-delay: 50ms; }
+.stagger > :nth-child(4) { animation-delay: 75ms; }
+.stagger > :nth-child(5) { animation-delay: 100ms; }
+.stagger > :nth-child(6) { animation-delay: 125ms; }
+.stagger > :nth-child(7) { animation-delay: 150ms; }
+.stagger > :nth-child(8) { animation-delay: 175ms; }
+.stagger > :nth-child(9) { animation-delay: 200ms; }
+.stagger > :nth-child(10) { animation-delay: 225ms; }
+.stagger > :nth-child(11) { animation-delay: 250ms; }
+.stagger > :nth-child(12) { animation-delay: 275ms; }
+.stagger > :nth-child(n+13) { animation: none; }
+/* карточка товара на ПК: лёгкий подъём при наведении */
+@media (hover: hover) and (pointer: fine) {
+  .card-lift { transition: transform 220ms var(--ease-ui), box-shadow 220ms var(--ease-ui); }
+  .card-lift:hover { transform: translate3d(0, -3px, 0); box-shadow: 0 12px 28px -18px rgb(0 0 0 / .7); }
+}
+.card-lift:active { transform: scale(.985); transition-duration: 120ms; }
+
 /* экраны поверх вкладок: выезжают справа и уезжают обратно */
 .layer { position: fixed; left: 0; right: 0; bottom: 0; top: calc(3.5rem + env(safe-area-inset-top, 0px)); overflow-y: auto; overflow-x: clip; overscroll-behavior: contain; background: var(--color-bg); z-index: 40; -webkit-overflow-scrolling: touch; }
 .layer-in { animation: px-push 240ms var(--ease-ui) both; box-shadow: -12px 0 32px rgba(0,0,0,.35); }
@@ -114,7 +138,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .cv-card { content-visibility: auto; contain-intrinsic-size: auto 300px; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
 /* дети сеток и флексов не распирают контейнер длинным текстом */
@@ -195,7 +219,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .adm .glass-bar { background: linear-gradient(165deg, var(--glass-hi), transparent 46%), var(--sheet); box-shadow: var(--glass-ring); }
 .adm .glass-panel { background: linear-gradient(160deg, var(--glass-hi), transparent 40%), color-mix(in oklab, var(--card) 55%, transparent); box-shadow: var(--glass-ring); border-radius: 28px; }
 .adm .soft { background: var(--soft); box-shadow: var(--rim); }
-/* шторки, выпадашки и модалки — непрозрачные */
+/* шторки, выпадашки и модалки, непрозрачные */
 .adm [role=dialog], .adm .pop {
   --color-surface: var(--pop); --color-surface-2: var(--pop-2); --color-surface-3: var(--pop-3);
 }
@@ -251,7 +275,8 @@ input, textarea, select { font: inherit; color: inherit; }
 /* слабые устройства (≤4 ядер / ≤3 ГБ / экономия трафика): короче и проще анимации */
 .lite .layer-in { animation: px-fade 140ms ease-out both; box-shadow: none; }
 .lite .layer-out { animation-duration: 160ms; }
-.lite .tab-root, .lite .fade-in { animation: none; }
+.lite .tab-root, .lite.nav-ready .tab-root, .lite .fade-in, .lite .stagger > * { animation: none; }
+.lite .card-lift { transition: none; }
 .lite .photo-img { transition: none; }
 .lite .adm .rise, .lite .adm .row-in > *, .lite .adm .enter-dock > *, .lite .adm .enter-item { animation: none !important; }
 /* установленное приложение: без выделения текста по долгому тапу, как в нативном */
@@ -265,7 +290,7 @@ input, textarea, select { font: inherit; color: inherit; }
 
 /* ---------- админка на ПК: общий контейнер и сетка ---------- */
 .adm .adm-shell { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-/* с боковой рейкой (≥1280) — симметричные поля, чтобы шапка и раздел были на одной оси по центру */
+/* с боковой рейкой (≥1280), симметричные поля, чтобы шапка и раздел были на одной оси по центру */
 @media (min-width: 1280px) { .adm .adm-shell { padding-left: 88px; padding-right: 88px; } }
 .adm .adm-wrap { width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto; }
 /* таблицы: одинаковые отступы, заголовки на одной линии с содержимым, числа табличными цифрами */
@@ -278,7 +303,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .adm select.field { height: 44px; padding-top: 0; padding-bottom: 0; }
 
 /* ---------- широкие экраны: интерфейс чуть крупнее и на всю ширину ---------- */
-/* Все размеры в rem: на ПК ≥1600 базовый шрифт растёт, и вместе с ним — отступы, кнопки, карточки. Телефоны и обычные ноутбуки без изменений. */
+/* Все размеры в rem: на ПК ≥1600 базовый шрифт растёт, и вместе с ним, отступы, кнопки, карточки. Телефоны и обычные ноутбуки без изменений. */
 .site-wrap { width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 @media (min-width: 1440px) { .site-wrap { max-width: 1320px; padding-left: 32px; padding-right: 32px; } }
 @media (min-width: 1600px) { html { font-size: 17px; } .site-wrap { max-width: 1520px; padding-left: 40px; padding-right: 40px; } }

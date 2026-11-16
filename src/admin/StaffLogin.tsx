@@ -35,7 +35,7 @@ export function StaffLogin() {
     try {
       if (mode === 'signin') { const r = await staffSignIn(email, password); if (!r.ok) setErr(r.error) }
       if (mode === 'signup') {
-        if (password.length < 8) { setErr('Пароль — минимум 8 символов'); return }
+        if (password.length < 8) { setErr('Пароль: минимум 8 символов'); return }
         const r = await staffSignUp(email, password, name)
         if (!r.ok) setErr(r.error); else if (r.data.confirm) setSent('Проверьте почту: мы отправили ссылку для подтверждения. После неё войдите и попросите владельца выдать роль.')
       }
@@ -48,7 +48,7 @@ export function StaffLogin() {
       <form onSubmit={submit} className="glass rise p-6 flex flex-col gap-4" style={{ ['--i' as any]: 1 }}>
         <div>
           <div className="text-xl font-semibold flex items-center gap-2"><Lock className="size-5 text-accent" />{mode === 'signin' ? 'Вход для сотрудников' : mode === 'signup' ? 'Новый аккаунт сотрудника' : 'Сброс пароля'}</div>
-          <p className="text-sm text-muted mt-1">{mode === 'signup' ? 'После регистрации владелец назначит вам роль — до этого админка закрыта.' : mode === 'reset' ? 'Пришлём ссылку для нового пароля.' : 'Права зависят от роли: владелец, менеджер, склад, бухгалтерия.'}</p>
+          <p className="text-sm text-muted mt-1">{mode === 'signup' ? 'После регистрации владелец назначит вам роль. До этого админка закрыта.' : mode === 'reset' ? 'Пришлём ссылку для нового пароля.' : 'Права зависят от роли: владелец, менеджер, склад, бухгалтерия.'}</p>
         </div>
         {sent ? <div className="rounded-xl bg-ok/10 text-sm p-3">{sent}</div> : (<>
           {mode === 'signup' && <Field label="Имя и фамилия"><input id="st-name" className="field" autoComplete="name" value={name} onChange={e => setName(e.target.value)} required /></Field>}
@@ -97,7 +97,7 @@ export function StaffPending() {
     <Frame>
       <div className="glass rise p-6 flex flex-col gap-4">
         <div className="text-xl font-semibold flex items-center gap-2"><Clock className="size-5 text-warn" />Роль ещё не назначена</div>
-        <p className="text-sm text-muted">Вы вошли как <b className="text-fg">{email}</b>. Попросите владельца выдать вам роль — после этого обновите страницу.</p>
+        <p className="text-sm text-muted">Вы вошли как <b className="text-fg">{email}</b>. Попросите владельца выдать вам роль, затем обновите страницу.</p>
         <Button variant="soft" block onClick={() => staffSignOut()}><LogOut className="size-4" />Выйти</Button>
       </div>
     </Frame>

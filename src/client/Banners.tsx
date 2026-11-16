@@ -10,7 +10,7 @@ import { cx } from '../ui/kit'
 const BANNERS = [
   { src: b5, alt: 'Скидки до 30%: чем больше броней, тем выше скидка' },
   { src: b4, alt: 'Доступна доставка оборудования' },
-  { src: b2, alt: 'Pixel Shop — магазин фото- и видеотехники' },
+  { src: b2, alt: 'Pixel Shop. Магазин фото- и видеотехники' },
 ]
 const AUTO_MS = 5000
 

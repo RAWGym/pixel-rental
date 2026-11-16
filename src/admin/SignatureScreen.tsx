@@ -110,7 +110,7 @@ export function SignatureScreen({ snapshot, terms, version, defaultName, onCance
 
   const confirm = async () => {
     const len = inkLength(strokes.current), pts = strokes.current.reduce((n, s) => n + s.length, 0)
-    if (len < 120 || pts < 12) { setErr('Подпись слишком короткая — распишитесь как в документах'); haptic(30); return }
+    if (len < 120 || pts < 12) { setErr('Подпись слишком короткая. Распишитесь как в документах'); haptic(30); return }
     if (name.trim().length < 2) { setErr('Укажите ФИО'); return }
     // PNG 800×300, прозрачный фон, подпись вписана с полями
     const xs = strokes.current.flat().map(p => p[0]), ys = strokes.current.flat().map(p => p[1])
@@ -140,11 +140,11 @@ export function SignatureScreen({ snapshot, terms, version, defaultName, onCance
           <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
             <span className="sig-muted">Поставщик</span><span className="font-medium">Pixel Rental</span>
             <span className="sig-muted">Арендатор</span><span className="font-medium truncate">{s.customer.name}{s.customer.phone ? ` · ${s.customer.phone}` : ''}</span>
-            <span className="sig-muted">Период</span><span className="tnum">{dt(s.start)} — {dt(s.end)} · {s.days} сут</span>
+            <span className="sig-muted">Период</span><span className="tnum">{dt(s.start)} - {dt(s.end)} · {s.days} сут</span>
           </div>
           <ul className="flex flex-col gap-1 border-t sig-line pt-2">
             {s.items.map(i => (
-              <li key={i.product_id} className="flex gap-2 min-w-0"><span className="flex-1 min-w-0"><span className="block truncate">{i.name}{i.qty > 1 ? ` × ${i.qty}` : ''}</span><span className="block text-xs sig-muted truncate">S/N {i.units.map(u => u.serial).join(', ') || '—'}</span></span><span className="tnum shrink-0">{money(i.price * i.qty * s.days)}</span></li>
+              <li key={i.product_id} className="flex gap-2 min-w-0"><span className="flex-1 min-w-0"><span className="block truncate">{i.name}{i.qty > 1 ? ` × ${i.qty}` : ''}</span><span className="block text-xs sig-muted truncate">S/N {i.units.map(u => u.serial).join(', ') || '-'}</span></span><span className="tnum shrink-0">{money(i.price * i.qty * s.days)}</span></li>
             ))}
           </ul>
           <div className="flex flex-wrap gap-x-4 gap-y-1 border-t sig-line pt-2 tnum"><span>Итого <b>{money(s.total)}</b></span><span className="sig-muted">Оплачено {money(s.paid)}</span></div>

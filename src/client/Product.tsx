@@ -10,7 +10,7 @@ import { ProductArt, Button, IconBtn, Stepper, cx, haptic, toast, Sheet, Field }
 import { useAvail, useAvailMap, useCartQty, ProductCard, DateBar, SectionTitle } from './common'
 import { related } from '../lib/related'
 import { calcPrice, rentalDays, DAY, nextTier } from '../lib/pricing'
-import { money, dShort, daysWord, MONTHS_NOM } from '../lib/format'
+import { placeLine, money, dShort, daysWord, MONTHS_NOM } from '../lib/format'
 import { dayStrip } from '../lib/availability'
 import { api } from '../data/api'
 
@@ -82,7 +82,7 @@ function AvailabilityCalendar({ p }: { p: Product }) {
     <div className="rounded-2xl bg-surface p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <div className="font-semibold">Доступность</div>
-        <div className="text-sm text-muted">{MONTHS_NOM[m0]}{m1 !== m0 ? ` – ${MONTHS_NOM[m1]}` : ''}</div>
+        <div className="text-sm text-muted">{MONTHS_NOM[m0]}{m1 !== m0 ? ` - ${MONTHS_NOM[m1]}` : ''}</div>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center">
         {WD_SHORT.map(w => <div key={w} className="text-xs text-faint pb-1">{w}</div>)}
@@ -150,7 +150,7 @@ export function ProductScreen() {
   const add = () => { addToCart(p.id, Math.max(1, Math.min(want, a.total - qty))); haptic(); toast('Добавлено в корзину', { action: { label: 'Корзина', fn: () => tab('cart') } }) }
 
   const share = async () => {
-    const text = `${p.name} — ${money(p.price)}/сутки в Pixel Rental`
+    const text = `${p.name} · ${money(p.price)}/сутки в Pixel Rental`
     try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Скопировано') } } catch { /* отменили */ }
   }
   const availText = a.total === 0 ? 'Нет в этом городе' : a.free > 0 ? `В наличии ${a.total} шт` : a.next ? `На ваши даты занято, свободно с ${dShort(a.next)}` : 'На ваши даты занято'
@@ -242,7 +242,7 @@ export function ProductScreen() {
           )}
           {p.description && <p className="text-muted leading-relaxed">{p.description}</p>}
           <div className="text-xs text-faint flex gap-1.5"><Info className="size-3.5 shrink-0 mt-0.5" />Технику проверяем перед каждой выдачей. Аккумуляторы заряжены, карты отформатированы.</div>
-          <div className="text-xs text-faint flex gap-1.5"><MapPin className="size-3.5 shrink-0 mt-0.5" />{settings.points[city].address} · {settings.points[city].hours}</div>
+          <div className="text-xs text-faint flex gap-1.5"><MapPin className="size-3.5 shrink-0 mt-0.5" />{placeLine(settings.points[city])} · {settings.points[city].hours}</div>
           </>}
         </div>
       </div>
@@ -274,7 +274,7 @@ export function ProductScreen() {
 
       <Sheet open={wait} onClose={() => setWait(false)} title="Сообщим, когда освободится"
         footer={<Button block size="lg" disabled={!wName || wPhone.replace(/\D/g, '').length < 10} onClick={async () => {
-          await api.createLead({ type: 'waitlist', name: wName, phone: wPhone, text: `Ждёт ${p.name} на ${dShort(range.start)}–${dShort(range.end)}`, productId: p.id, city, dates: range })
+          await api.createLead({ type: 'waitlist', name: wName, phone: wPhone, text: `Ждёт ${p.name} на ${dShort(range.start)}-${dShort(range.end)}`, productId: p.id, city, dates: range })
           setWait(false); toast('Готово. Напишем, как только техника вернётся')
         }}>Подписаться</Button>}>
         <p className="text-muted text-sm mb-4">{p.name} занят на ваши даты. Менеджер напишет в WhatsApp, когда он освободится, или предложит замену.</p>

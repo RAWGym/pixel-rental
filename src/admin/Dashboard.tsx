@@ -125,7 +125,7 @@ function Spark({ vals, h = 92 }: { vals: number[]; h?: number }) {
 }
 
 function Chip({ v, pp }: { v: number | null; pp?: boolean }) {
-  if (v === null || !isFinite(v)) return <span className="h-6 px-2 rounded-lg text-xs grid place-items-center bg-surface-3 text-muted">—</span>
+  if (v === null || !isFinite(v)) return <span className="h-6 px-2 rounded-lg text-xs grid place-items-center bg-surface-3 text-muted">-</span>
   const r = Math.round(v)
   return <span className={cx('h-6 px-2 rounded-lg text-xs font-semibold tnum grid place-items-center', r >= 0 ? 'bg-ok/15 text-ok' : 'bg-bad/15 text-bad')}>{r > 0 ? '+' : ''}{r}{pp ? ' п.п.' : '%'}</span>
 }
@@ -134,7 +134,7 @@ const ini = (name: string) => name.split(' ').map(w => w[0]).slice(0, 2).join(''
 const AV = ['#f2c9a0', '#c9e4d6', '#d6d9f2', '#f2d6d6', '#efe2b8']
 function Delta({ cur, prev, invert, pp, off }: { cur: number; prev: number; invert?: boolean; pp?: boolean; off?: boolean }) {
   if (off) return <span className="text-xs text-faint">нет данных для сравнения</span>
-  if (!prev && !cur) return <span className="text-xs text-faint">—</span>
+  if (!prev && !cur) return <span className="text-xs text-faint">-</span>
   const d = pp ? (cur - prev) * 100 : prev ? ((cur - prev) / prev) * 100 : 100
   const r = Math.round(d)
   if (r === 0) return <span className="text-xs text-muted">≈ как раньше</span>
@@ -356,7 +356,7 @@ export function Dashboard() {
     if (period === 'custom') {
       const f = startOfDay(new Date(cFrom).getTime() || today), t = startOfDay(new Date(cTo).getTime() || today) + DAY
       const a = Math.min(f, t - DAY), b = Math.max(f + DAY, t)
-      return { from: a, to: b, bucket: b - a > 62 * DAY ? 7 * DAY : DAY, label: `${dShort(a)} – ${dShort(b - DAY)}` }
+      return { from: a, to: b, bucket: b - a > 62 * DAY ? 7 * DAY : DAY, label: `${dShort(a)} - ${dShort(b - DAY)}` }
     }
     const n = Number(period)
     return { from: today - (n - 1) * DAY, to: today + DAY, bucket: n > 62 ? 7 * DAY : DAY, label: n === 365 ? 'за год' : `за ${n} дней` }
@@ -402,7 +402,7 @@ export function Dashboard() {
   }, [bs, ls, customers, units, bookings, city, today])
 
   const pName = useMemo(() => { const m = new Map(products.map(p => [p.id, p])); return (id: string) => m.get(id)?.name ?? id }, [products])
-  const cName = useMemo(() => { const m = new Map(customers.map(c => [c.id, c.name])); return (id: string) => m.get(id) ?? '—' }, [customers])
+  const cName = useMemo(() => { const m = new Map(customers.map(c => [c.id, c.name])); return (id: string) => m.get(id) ?? '-' }, [customers])
   const unitsPerProduct = useMemo(() => { const m = new Map<string, number>(); for (const u of us) m.set(u.productId, (m.get(u.productId) ?? 0) + 1); return m }, [us])
 
   // простаивает: самая низкая загрузка за период среди техники от 3 000 ₸/сут
@@ -497,7 +497,7 @@ export function Dashboard() {
         {period === 'custom' && (
           <div className="flex items-center gap-2 text-sm">
             <input type="date" value={cFrom} max={cTo} onChange={e => setCFrom(e.target.value)} className="field h-10 py-0 w-auto" aria-label="С" />
-            <span className="text-muted">—</span>
+            <span className="text-muted">-</span>
             <input type="date" value={cTo} min={cFrom} onChange={e => setCTo(e.target.value)} className="field h-10 py-0 w-auto" aria-label="По" />
           </div>
         )}
@@ -598,7 +598,7 @@ export function Dashboard() {
       {/* ряд 4: давно не брали + команда */}
       {(ops || fin) && (
         <div key={'r4' + k} className="grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-4">
-          <Card i={8} title="Давно не брали" sub="Постоянные клиенты — напомните о себе">
+          <Card i={8} title="Давно не брали" sub="Постоянные клиенты: напомните о себе">
             {lapsed.length ? lapsed.map((x, li) => (
               <div key={x.c.id} className="flex items-center gap-3">
                 <span className="size-10 grid place-items-center rounded-full text-sm font-semibold shrink-0" style={{ background: AV[li % AV.length], color: '#2a1a0e' }}>{ini(x.c.name)}</span>
@@ -625,7 +625,7 @@ export function Dashboard() {
         {fin && <Kpi label="Средний чек" value={<CountUp v={cur.avg} fmt={n => money(Math.round(n))} />} delta={<Delta cur={cur.avg} prev={prev.avg} off={!cmp} />} />}
         <Kpi label="Загрузка парка" value={`${Math.round(cur.util * 100)}%`} delta={<Delta cur={cur.util} prev={prev.util} pp off={!cmp} />} hint={`${us.length} ед.`} onClick={() => go('calendar')} />
         {(ops || fin) && <Kpi label="Новые клиенты" value={<CountUp v={cur.newClients} />} delta={<Delta cur={cur.newClients} prev={prev.newClients} off={!cmp} />} onClick={can('customers') ? () => go('customers') : undefined} />}
-        {can('leads') && <Kpi label="Конверсия заявок" value={cur.conv === null ? '—' : `${Math.round(cur.conv * 100)}%`} delta={cur.conv !== null && prev.conv !== null ? <Delta cur={cur.conv} prev={prev.conv} pp off={!cmp} /> : undefined} hint={`${cur.leadsN} заявок`} onClick={() => go('leads')} />}
+        {can('leads') && <Kpi label="Конверсия заявок" value={cur.conv === null ? '-' : `${Math.round(cur.conv * 100)}%`} delta={cur.conv !== null && prev.conv !== null ? <Delta cur={cur.conv} prev={prev.conv} pp off={!cmp} /> : undefined} hint={`${cur.leadsN} заявок`} onClick={() => go('leads')} />}
         {(ops || wh) && <Kpi label="Просрочки возвратов" value={ops$.overdue.length} icon={ops$.overdue.length ? <AlertTriangle className="size-3.5 text-bad" /> : undefined} hint="сейчас" onClick={() => go('bookings', 'overdue')} />}
         {can('customers') && <Kpi label="Ждут верификации" value={ops$.verif.length} icon={ops$.verif.length ? <ShieldCheck className="size-3.5 text-warn" /> : undefined} hint="профили" onClick={() => go('customers')} />}
         {fin && <Kpi label="Ждём оплату" value={`${compact(ops$.unpaid.reduce((s, b) => s + b.total - b.paid, 0))} ₸`} hint={`${ops$.unpaid.length} броней`} onClick={() => go('bookings')} />}
@@ -633,7 +633,7 @@ export function Dashboard() {
 
       {/* требует внимания */}
       {attention.length > 0 && (
-        <Card i={10} title="Требует внимания" sub="нажмите, чтобы открыть раздел">
+        <Card i={10} title="Требует внимания">
           <div className="grid sm:grid-cols-2 gap-1.5 -mx-1">
             {attention.map(a => (
               <button key={a.text} onClick={a.on} className="press flex items-center gap-3 p-2 rounded-xl hover:bg-surface-2 text-left min-w-0">
@@ -664,7 +664,7 @@ export function Dashboard() {
       </div>
 
       {(fin || can('pricing.edit')) && (
-        <Card i={16} title="Техника простаивает" sub={`самая низкая загрузка ${label} — кандидаты на скидку или акцию`} action={<TrendingDown className="size-4 text-muted shrink-0" />}>
+        <Card i={16} title="Техника простаивает" sub={`самая низкая загрузка ${label}: кандидаты на скидку или акцию`} action={<TrendingDown className="size-4 text-muted shrink-0" />}>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {idle.map(({ p, util }) => (
               <button key={p.id} onClick={() => go('products', p.id)} className="press flex items-center gap-3 rounded-xl bg-surface-2 p-3 text-left min-w-0">

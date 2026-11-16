@@ -53,7 +53,7 @@ export function IssueAdmin() {
 
   return (
     <div>
-      <PageHead title="Выдача" sub="Выдача техники по договору с подписью клиента и приёмка возвратов" />
+      <PageHead title="Выдача" />
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <Seg value={tab} onChange={v => { setTab(v); setSel(null) }} options={[
           { value: 'out', label: <span className="flex items-center gap-1.5">К выдаче<span className="tnum text-xs opacity-70">{lists.out.length}</span></span> },
@@ -75,7 +75,7 @@ export function IssueAdmin() {
                   <span className={cx('size-10 grid place-items-center rounded-xl shrink-0', late ? 'bg-bad/15 text-bad' : tab === 'out' ? 'bg-accent/15 text-accent' : 'bg-info/15 text-info')}>{tab === 'out' ? <PackageOpen className="size-5" /> : <Undo2 className="size-5" />}</span>
                   <span className="flex-1 min-w-0">
                     <span className="flex items-center gap-2"><span className="font-semibold tnum">{b.code}</span>{late ? <Badge tone="bad">Просрочка</Badge> : today && tab === 'out' ? <Badge tone="accent">Сегодня</Badge> : null}{v !== 'verified' && tab === 'out' && <Badge tone="warn">{VERIFICATION_LABEL[v]}</Badge>}</span>
-                    <span className="block text-sm truncate">{c?.name ?? '—'}</span>
+                    <span className="block text-sm truncate">{c?.name ?? '-'}</span>
                     <span className="block text-xs text-muted tnum truncate">{tab === 'out' ? `Выдача ${dWithTime(b.start)}` : `Возврат ${dWithTime(b.end)}`} · {b.items.reduce((n, i) => n + i.qty, 0)} поз. · {money(b.total)}</span>
                   </span>
                 </button>
@@ -111,7 +111,7 @@ function CustomerCard({ b }: { b: Booking }) {
   return (
     <div className="rounded-2xl bg-surface-2 p-3 flex flex-col gap-2">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="font-semibold">{c?.name ?? '—'}</span>
+        <span className="font-semibold">{c?.name ?? '-'}</span>
         {v === 'verified' ? <Badge tone="ok"><ShieldCheck className="size-3.5 inline -mt-0.5 mr-1" />Профиль подтверждён</Badge> : <Badge tone="warn"><ShieldAlert className="size-3.5 inline -mt-0.5 mr-1" />{VERIFICATION_LABEL[v]}</Badge>}
         {c?.blacklisted && <Badge tone="bad">Чёрный список</Badge>}
       </div>
@@ -172,7 +172,7 @@ function IssuePanel({ b, onDone }: { b: Booking; onDone: () => void }) {
         const contract: Contract = {
           id: `ct-${Date.now().toString(36)}`, bookingId: b.id, code: b.code, version: tpl.version, terms: tpl.body, termsHash, snapshot,
           docHash: sha256(tpl.body + '\n' + JSON.stringify(snapshot) + '\n' + r.hash), signerName: r.signerName, signaturePath: r.dataUrl, signatureHash: r.hash,
-          checklist: ch, verifiedOverride: v !== 'verified', signedAt: Date.now(), issuedBy: s.staffId ?? '', issuedByName: me?.name ?? '—', userAgent: navigator.userAgent, status: 'signed',
+          checklist: ch, verifiedOverride: v !== 'verified', signedAt: Date.now(), issuedBy: s.staffId ?? '', issuedByName: me?.name ?? '-', userAgent: navigator.userAgent, status: 'signed',
         }
         s.issueBooking(b.id, contract, changed ? units : undefined)
       }
@@ -203,7 +203,7 @@ function IssuePanel({ b, onDone }: { b: Booking; onDone: () => void }) {
                       <span className="text-xs text-muted">Единица {it.qty > 1 ? k + 1 : ''} · серийный №</span>
                       <select className={cx('field h-10 py-0 tnum', u && (u.maintenance || u.condition === 'repair') && 'border-bad')} value={val}
                         onChange={e => setUnits(m => { const arr = [...(m[it.productId] ?? [])]; arr[k] = e.target.value; return { ...m, [it.productId]: arr } })}>
-                        <option value="">— выбрать —</option>
+                        <option value="">Выбрать</option>
                         {options.map(o => <option key={o.id} value={o.id} disabled={(units[it.productId] ?? []).includes(o.id) && o.id !== val}>{o.serial}{o.condition === 'new' ? ' · новая' : o.condition === 'worn' ? ' · б/у' : ''}{o.maintenance || o.condition === 'repair' ? ' · обслуживание' : ''}</option>)}
                       </select>
                     </label>
@@ -221,14 +221,14 @@ function IssuePanel({ b, onDone }: { b: Booking; onDone: () => void }) {
         <Check checked={ch.payment} onChange={x => setCh({ ...ch, payment: x })}>Оплата аренды получена{b.paid < b.total ? ` (осталось ${money(b.total - b.paid)})` : ''}</Check>
         <textarea className="field min-h-[64px]" placeholder="Замечания: царапина на корпусе, нет бленды…" value={ch.note} onChange={e => setCh({ ...ch, note: e.target.value })} />
       </div>
-      {c?.blacklisted && <div className="rounded-xl bg-bad/15 text-bad p-3 text-sm flex gap-2"><AlertTriangle className="size-4 shrink-0 mt-0.5" />Клиент в чёрном списке — выдача запрещена</div>}
+      {c?.blacklisted && <div className="rounded-xl bg-bad/15 text-bad p-3 text-sm flex gap-2"><AlertTriangle className="size-4 shrink-0 mt-0.5" />Клиент в чёрном списке, выдача запрещена</div>}
       {v !== 'verified' && !c?.blacklisted && (
         <div className="rounded-xl bg-warn/10 p-3 text-sm flex flex-col gap-2">
-          <div className="flex gap-2"><ShieldAlert className="size-4 shrink-0 mt-0.5 text-warn" /><span>Профиль клиента {v === 'pending' ? 'ещё на проверке' : v === 'rejected' ? 'отклонён' : 'не проверен'}. Выдача без проверки документов — под ответственность сотрудника, запишется в журнал.</span></div>
+          <div className="flex gap-2"><ShieldAlert className="size-4 shrink-0 mt-0.5 text-warn" /><span>Профиль клиента {v === 'pending' ? 'ещё на проверке' : v === 'rejected' ? 'отклонён' : 'не проверен'}. Выдача без проверки документов под ответственность сотрудника, запишется в журнал.</span></div>
           {canOverride ? <Check checked={override} onChange={setOverride}>Сверил удостоверение лично, разрешаю выдачу</Check> : <span className="text-xs text-muted">Разрешить выдачу может менеджер или владелец.</span>}
         </div>
       )}
-      {badUnit && <div className="text-sm text-bad">Одна из единиц на обслуживании — выберите другую.</div>}
+      {badUnit && <div className="text-sm text-bad">Одна из единиц на обслуживании. Выберите другую.</div>}
       <Button size="lg" block disabled={!ready} onClick={() => { haptic(15); setSigning(true) }} className="h-14 text-base"><PackageCheck className="size-5" />Выдать</Button>
       {!ready && <div className="text-xs text-muted text-center -mt-1">{!filled ? 'Выберите единицы техники' : !(ch.complete && ch.condition && ch.payment) ? 'Отметьте все пункты чек-листа' : !verifiedOk ? 'Нужна проверка профиля или разрешение менеджера' : ''}</div>}
       {signing && <SignatureScreen snapshot={snapshot} terms={tpl.body} version={tpl.version} defaultName={c?.name ?? ''} busy={busy} onCancel={() => setSigning(false)} onConfirm={done} />}

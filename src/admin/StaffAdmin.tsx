@@ -21,7 +21,7 @@ export function StaffAdmin() {
   const [edit, setEdit] = useState<Staff | null>(null)
   return (
     <div>
-      <PageHead title="Сотрудники и роли" sub="Кто имеет доступ и что может делать" actions={tab === 'staff'
+      <PageHead title="Сотрудники и роли" actions={tab === 'staff'
         ? <Button onClick={() => setEdit({ id: uid('s'), name: '', phone: '', roleId: 'manager', city: 'almaty', active: true, pin: String(Math.floor(1000 + Math.random() * 9000)), createdAt: Date.now() })}><Plus className="size-4" />Сотрудник</Button>
         : <Button onClick={() => { upsertRole({ id: uid('r'), name: 'Новая роль', color: PALETTE[roles.length % PALETTE.length], permissions: ['dashboard', 'bookings.view'] }); toast('Роль добавлена') }}><Plus className="size-4" />Роль</Button>} />
       <Segmented layoutId="staff-tab" className="max-w-sm mb-5" value={tab} onChange={setTab} options={[{ value: 'staff', label: `Сотрудники · ${staff.length}` }, { value: 'roles', label: `Роли · ${roles.length}` }]} />

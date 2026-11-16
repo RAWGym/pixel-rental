@@ -50,7 +50,7 @@ export const ProductCard = memo(function ProductCard({ p, lazy }: { p: Product; 
   // только главное: фото, название, цена за сутки, наличие
   return (
     // content-visibility — только в длинной сетке каталога: в горизонтальных рядах некоторые браузеры не дорисовывают карточки
-    <div className={cx(lazy && 'cv-card', 'group flex flex-col w-full min-w-0 bg-surface rounded-2xl overflow-hidden')}>
+    <div className={cx(lazy && 'cv-card', 'card-lift group flex flex-col w-full min-w-0 bg-surface rounded-2xl overflow-hidden')}>
       <button onClick={open} className="text-left" aria-label={p.name}>
         <ProductArt p={p} className="aspect-square w-full" />
       </button>
@@ -67,7 +67,7 @@ export const ProductCard = memo(function ProductCard({ p, lazy }: { p: Product; 
             <Stepper size="sm" value={qty} max={a.free} onChange={n => setQty(p.id, n)} />
           ) : (
             <button disabled={!canAdd} aria-label="Добавить в корзину"
-              onClick={() => { add(p.id); haptic(); toast(`${p.name} — в корзине`) }}
+              onClick={() => { add(p.id); haptic(); toast(`${p.name}: в корзине`) }}
               className="press size-9 shrink-0 grid place-items-center rounded-xl bg-surface-3 text-fg hover:bg-accent hover:text-accent-ink disabled:opacity-40">
               <Plus className="size-[18px]" strokeWidth={2.2} />
             </button>

@@ -115,7 +115,7 @@ export function CartScreen() {
             {nt && (
               <button onClick={() => { setRange({ start: range.start, end: range.end + (nt.days - t.days) * DAY }); haptic(15); toast(`Продлили до ${daysWord(nt.days)}: скидка −${nt.percent}%`) }}
                 className="press mt-1 flex items-center justify-between gap-3 rounded-xl bg-accent/[0.08] px-3 py-2.5 text-left">
-                <span className="text-sm">Ещё {plural(nt.days - t.days, '1 сутки', `${nt.days - t.days} суток`, `${nt.days - t.days} суток`)} — скидка <b className="text-accent">−{nt.percent}%</b></span>
+                <span className="text-sm">Ещё {plural(nt.days - t.days, '1 сутки', `${nt.days - t.days} суток`, `${nt.days - t.days} суток`)}, скидка <b className="text-accent">−{nt.percent}%</b></span>
                 <span className="text-xs font-semibold text-accent shrink-0">Продлить</span>
               </button>
             )}

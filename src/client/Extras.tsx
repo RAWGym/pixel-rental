@@ -184,9 +184,9 @@ export function CompareScreen() {
           <Row label={`За ваши даты (${daysWord(days)})`} render={p => <span className="tnum">{money(p.price * days)}</span>} />
           <Row label="Наличие на даты" render={p => { const a = avail.get(p.id); return <span className="flex items-center gap-1.5"><span className={cx('size-2 rounded-full', !a?.total ? 'bg-faint' : a.free ? 'bg-ok' : 'bg-bad')} />{!a?.total ? 'нет в городе' : a.free ? `свободно ${a.free}` : 'занято'}</span> }} />
           <Row label="Тип · бренд" render={p => `${p.kind} · ${p.brand}`} />
-          {Array.from({ length: maxSpecs }, (_, i) => <Row key={i} label={i === 0 ? 'Характеристики' : ''} render={p => p.specs[i] ?? <span className="text-faint">—</span>} />)}
+          {Array.from({ length: maxSpecs }, (_, i) => <Row key={i} label={i === 0 ? 'Характеристики' : ''} render={p => p.specs[i] ?? <span className="text-faint">-</span>} />)}
           <div className="col-span-full h-3" />
-          {list.map(p => <Button key={p.id} size="sm" variant="soft" disabled={!(avail.get(p.id)?.free)} onClick={() => { addToCart(p.id); haptic(); toast(`${p.name} — в корзине`) }}>В корзину</Button>)}
+          {list.map(p => <Button key={p.id} size="sm" variant="soft" disabled={!(avail.get(p.id)?.free)} onClick={() => { addToCart(p.id); haptic(); toast(`${p.name}: в корзине`) }}>В корзину</Button>)}
         </div>
       </div>
     </div>
@@ -211,9 +211,9 @@ export function CompareBar() {
 
 /* ---------- Онбординг: 3 экрана при первом запуске ---------- */
 const SLIDES = [
-  { icon: Clapperboard, title: 'Техника под любую съёмку', text: 'Камеры, оптика, свет, звук и дроны. Выберите задачу — соберём комплект на бюджет, оптимум или про.' },
-  { icon: CalendarRange, title: 'Сразу видно, что свободно', text: 'Укажите даты — каталог покажет свободную технику и посчитает цену со скидкой за срок.' },
-  { icon: Store, title: 'Забирайте 24/7', text: 'Алматы, Толе би 176 — круглосуточно. Астана, Бокейхана 6. Или привезём на площадку.' },
+  { icon: Clapperboard, title: 'Техника под любую съёмку', text: 'Камеры, оптика, свет, звук и дроны. Выберите задачу, и соберём комплект на бюджет, оптимум или про.' },
+  { icon: CalendarRange, title: 'Сразу видно, что свободно', text: 'Укажите даты, и каталог покажет свободную технику и посчитает цену со скидкой за срок.' },
+  { icon: Store, title: 'Забирайте 24/7', text: 'Pixel Shop в Алматы открыт круглосуточно, в Астане с 9 до 21. Или привезём на площадку.' },
 ]
 const OB_KEY = 'px-onboarded'
 export function Onboarding() {

@@ -41,7 +41,7 @@ export function CalendarAdmin() {
 
   return (
     <div>
-      <PageHead title="Шахматка" sub="Загрузка каждой единицы техники по дням. Нажмите на бронь, чтобы открыть её." actions={
+      <PageHead title="Шахматка" actions={
         <div className="flex gap-1"><Button variant="soft" size="sm" onClick={() => setOffset(offset - 7)} aria-label="Назад"><ChevronLeft className="size-4" /></Button><Button variant="soft" size="sm" onClick={() => setOffset(-2)}>Сегодня</Button><Button variant="soft" size="sm" onClick={() => setOffset(offset + 7)} aria-label="Вперёд"><ChevronRight className="size-4" /></Button></div>} />
       <div className="flex flex-col md:flex-row gap-2 mb-3">
         <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted" /><input id="cal-q" className="field pl-10 h-11" placeholder="Поиск по всем категориям" value={q} onChange={e => setQ(e.target.value)} /></div>
@@ -68,7 +68,7 @@ export function CalendarAdmin() {
                 <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${N}, 1fr)` }}>{Array.from({ length: N }, (_, i) => <div key={i} className={cx('border-l border-line/40', from + i * DAY === t0.getTime() && 'bg-accent/[0.05]')} />)}</div>
                 {u.maintenance && <div className="absolute inset-y-2 left-0 right-0 bg-[repeating-linear-gradient(45deg,transparent_0_6px,color-mix(in_oklab,var(--color-warn)_25%,transparent)_6px_8px)] rounded" title="На обслуживании" />}
                 {(bars.get(u.id) ?? []).map(b => (
-                  <button key={b.id} onClick={() => go('bookings', b.id)} title={`${b.code} · ${b.who} · ${dShort(b.s)}–${dShort(b.e)}`}
+                  <button key={b.id} onClick={() => go('bookings', b.id)} title={`${b.code} · ${b.who} · ${dShort(b.s)}-${dShort(b.e)}`}
                     className={cx('absolute top-2 bottom-2 rounded-md px-1.5 text-xs font-semibold truncate text-left hover:brightness-110 ring-2 ring-surface', b.status === 'overdue' ? 'bg-bad text-accent-ink' : COLORS[b.status])}
                     style={{ left: `${pct(b.s)}%`, width: `max(${pct(b.e) - pct(b.s)}%, 6px)` }}>{b.code.replace('PX-', '')} {b.who}</button>
                 ))}

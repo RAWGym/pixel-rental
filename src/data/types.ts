@@ -168,7 +168,8 @@ export interface Settings {
   deliveryFee: Record<CityId, number>
   nightFee: number
   minHours: number
-  points: Record<CityId, { address: string; hours: string; open: number; close: number; phone: string }>
+  /** точки выдачи; name — необязательная вывеска рядом с адресом */
+  points: Record<CityId, { address: string; name?: string; hours: string; open: number; close: number; phone: string }>
   /** версии текста договора аренды; действует последняя */
   contractTemplates?: ContractTemplate[]
 }

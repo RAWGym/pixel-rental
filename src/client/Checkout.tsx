@@ -9,7 +9,7 @@ import { useCartTotals } from './Cart'
 import { CheckoutGate, VerificationBadge, fmtPhone } from './Auth'
 import { api } from '../data/api'
 import { verificationOf } from '../data/types'
-import { money, dWithTime, daysWord, wd } from '../lib/format'
+import { placeLine, money, dWithTime, daysWord, wd } from '../lib/format'
 import type { PaymentMethod } from '../data/types'
 
 const PAY: { id: PaymentMethod; label: string; hint: string; icon: any }[] = [
@@ -75,7 +75,7 @@ function CheckoutForm() {
           )}
           <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Имя и фамилия" error={touched && name.trim().length < 2 ? 'Как к вам обращаться?' : undefined}><input id="co-name" autoComplete="name" className="field" value={name} onChange={e => setName(e.target.value)} placeholder="Айдана Сейткали" /></Field>
-            <Field label="Телефон" hint="Номер из профиля. Подтверждение придёт в WhatsApp" error={touched && !phoneOk ? 'Нужен номер из 11 цифр' : undefined}><input id="co-phone" readOnly className="field tnum opacity-80" value={fmtPhone(phone)} /></Field>
+            <Field label="Телефон" hint="Подтверждение придёт в WhatsApp" error={touched && !phoneOk ? 'Нужен номер из 11 цифр' : undefined}><input id="co-phone" readOnly className="field tnum opacity-80" value={fmtPhone(phone)} /></Field>
             <Field label="Email (необязательно)"><input id="co-email" type="email" className="field" value={email} onChange={e => setEmail(e.target.value)} placeholder="для чеков" /></Field>
             <Field label="Компания (если нужен счёт)" error={touched && pay === 'invoice' && !company.trim() ? 'Для счёта нужна компания' : undefined}><input id="co-company" className="field" value={company} onChange={e => setCompany(e.target.value)} placeholder="ТОО / ИП" /></Field>
           </div>
@@ -94,7 +94,7 @@ function CheckoutForm() {
           </div>
           <AnimatePresence mode="wait">
             {deliveryType === 'pickup' ? (
-              <motion.div key="p" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-xl bg-surface-2 p-3 text-sm flex gap-2"><MapPin className="size-4 text-accent mt-0.5" /><div><b>{point.address}</b><div className="text-muted">{point.hours}</div></div></motion.div>
+              <motion.div key="p" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-xl bg-surface-2 p-3 text-sm flex gap-2"><MapPin className="size-4 text-accent mt-0.5" /><div><b>{placeLine(point)}</b><div className="text-muted">{point.hours}</div></div></motion.div>
             ) : (
               <motion.div key="d" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 <Field label="Адрес доставки" error={touched && address.trim().length < 5 ? 'Укажите адрес' : undefined}><input id="co-address" className="field" value={address} onChange={e => setAddress(e.target.value)} placeholder="Улица, дом, офис / локация съёмки" /></Field>

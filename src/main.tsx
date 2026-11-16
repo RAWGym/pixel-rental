@@ -28,6 +28,8 @@ postNative({ type: 'ready' })
 importKitFromHash()
 window.addEventListener('hashchange', () => { importKitFromHash() })
 initDevice()
+// анимации смены экранов включаем после первой отрисовки
+setTimeout(() => document.documentElement.classList.add('nav-ready'), 1200)
 // общая база: если заданы ключи Supabase — подключаем её (код адаптера грузится отдельным чанком), иначе демо-режим
 if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
   Promise.all([import('./data/supabase'), import('./data/api')]).then(async ([m, a]) => {

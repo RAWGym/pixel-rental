@@ -42,7 +42,7 @@ export function CustomersAdmin() {
               <td className="px-4 py-3 tnum text-muted">{c.phone}</td>
               <td className="num">{s?.n ?? 0}</td>
               <td className="num">{money(s?.sum ?? 0)}</td>
-              <td className="px-4 py-3 text-muted">{s?.last ? dShort(s.last) : '—'}</td>
+              <td className="px-4 py-3 text-muted">{s?.last ? dShort(s.last) : '-'}</td>
               <td className="px-4 py-3"><div className="flex gap-1">{c.blacklisted ? <Badge tone="bad">ЧС</Badge> : (() => { const v = verificationOf(c); return <Badge tone={v === 'verified' ? 'ok' : v === 'pending' ? 'warn' : v === 'rejected' ? 'bad' : 'muted'}>{VERIFICATION_LABEL[v]}</Badge> })()}{c.tags.filter(t => t !== 'Новый').map(t => <Badge key={t}>{t}</Badge>)}</div></td>
             </tr>) })}</tbody>
         </table>
@@ -101,7 +101,7 @@ function VerificationQueue() {
             <span className="flex -space-x-3 shrink-0">
               {[c.idFront, c.idBack].map((src, i) => src ? <img key={i} src={src} alt="" className="h-11 aspect-[1.585/1] object-cover rounded-lg border-2 border-surface" /> : null)}
             </span>
-            <span className="flex-1 min-w-0"><span className="block font-medium truncate">{c.name}</span><span className="block text-xs text-muted tnum truncate">{c.phone} · ИИН {c.iin ?? '—'}</span></span>
+            <span className="flex-1 min-w-0"><span className="block font-medium truncate">{c.name}</span><span className="block text-xs text-muted tnum truncate">{c.phone} · ИИН {c.iin ?? '-'}</span></span>
             <span className="text-xs text-faint shrink-0">{c.consentAt ? relTime(c.consentAt) : ''}</span>
           </button>
         ))}
@@ -137,7 +137,7 @@ function ReviewSheet({ id, onClose }: { id: string | null; onClose: () => void }
       )}>
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
-          {[['Телефон', c.phone], ['ИИН', c.iin ?? '—'], ['Email', c.email ?? '—'], ['Согласие', c.consentAt ? dShort(c.consentAt) : '—']].map(([l, v]) => (
+          {[['Телефон', c.phone], ['ИИН', c.iin ?? '-'], ['Email', c.email ?? '-'], ['Согласие', c.consentAt ? dShort(c.consentAt) : '-']].map(([l, v]) => (
             <div key={l} className="rounded-xl bg-surface-2 p-3 min-w-0"><div className="text-xs text-muted">{l}</div><div className="tnum truncate">{v}</div></div>
           ))}
         </div>

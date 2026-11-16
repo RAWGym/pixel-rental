@@ -62,7 +62,7 @@ export async function buildActPdf(c: Contract, signaturePng: Uint8Array | null, 
   const kv = (k: string, v: string) => { need(15); text(k, M, 9.5, F, MUTED); para(v, 10, F, INK, M + 120, W - 120, 1.35) }
   kv('Поставщик', `Pixel Rental${opts.address ? `, ${CITY[s.city] ?? ''}, ${opts.address}` : `, ${CITY[s.city] ?? ''}`}`)
   kv('Арендатор', [s.customer.name, s.customer.phone, s.customer.iin ? `ИИН ${s.customer.iin}` : ''].filter(Boolean).join(', '))
-  kv('Срок аренды', `${dt(s.start)} — ${dt(s.end)} (${s.days} сут.)`)
+  kv('Срок аренды', `${dt(s.start)} - ${dt(s.end)} (${s.days} сут.)`)
   rule(10)
 
   // таблица техники
@@ -70,7 +70,7 @@ export async function buildActPdf(c: Contract, signaturePng: Uint8Array | null, 
   const head = ['№', 'Наименование', 'Серийные номера', 'Кол.', 'Сумма']
   need(20); head.forEach((h, i) => text(h, i === 4 ? cols[5] - B.widthOfTextAtSize(h, 9) : cols[i], 9, B, MUTED)); y -= 14
   s.items.forEach((it, n) => {
-    const name = wrap(it.name, F, 9.5, cols[2] - cols[1] - 8), sn = wrap(it.units.map(u => u.serial).join(', ') || '—', F, 9, cols[3] - cols[2] - 8)
+    const name = wrap(it.name, F, 9.5, cols[2] - cols[1] - 8), sn = wrap(it.units.map(u => u.serial).join(', ') || '-', F, 9, cols[3] - cols[2] - 8)
     const rows = Math.max(name.length, sn.length), h = rows * 12 + 6
     need(h)
     const sum = money(it.price * it.qty * s.days)
@@ -129,7 +129,7 @@ export async function buildActPdf(c: Contract, signaturePng: Uint8Array | null, 
   need(60)
   para(`Хэш документа SHA-256: ${c.docHash}`, 7.5, F, MUTED, M, W, 1.3)
   para(`Хэш условий: ${c.termsHash}   ·   Хэш подписи: ${c.signatureHash}`, 7.5, F, MUTED, M, W, 1.3)
-  para('Подпись арендатора — простая электронная подпись (собственноручное изображение подписи), сохранённая вместе с хэшем текста условий, временем, сотрудником и перечнем техники.', 7.5, F, MUTED, M, W, 1.3)
+  para('Подпись арендатора: простая электронная подпись (собственноручное изображение подписи), сохранённая вместе с хэшем текста условий, временем, сотрудником и перечнем техники.', 7.5, F, MUTED, M, W, 1.3)
 
   // номера страниц
   const pages = doc.getPages()

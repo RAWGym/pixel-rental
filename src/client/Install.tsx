@@ -59,10 +59,10 @@ export function InstallGuideSheet({ open, onClose, onDismiss }: { open: boolean;
           <>
             <SafariBar />
             <ol className="flex flex-col gap-4">
-              <Step n={1} icon={<Compass className="size-[18px] text-info" />}>Откройте <b>pixel-rental.vercel.app</b> в <b>Safari</b>.{isIOS() && !isSafari() && <span className="block text-warn mt-1">Сейчас другой браузер — на iPhone установить можно только из Safari.</span>}</Step>
+              <Step n={1} icon={<Compass className="size-[18px] text-info" />}>Откройте <b>pixel-rental.vercel.app</b> в <b>Safari</b>.{isIOS() && !isSafari() && <span className="block text-warn mt-1">Сейчас другой браузер. На iPhone установить можно только из Safari.</span>}</Step>
               <Step n={2} icon={<Share className="size-[18px] text-info" />}>Нажмите <b>«Поделиться»</b> внизу экрана (квадрат со стрелкой вверх).</Step>
               <Step n={3} icon={<PlusSquare className="size-[18px]" />}>Пролистайте список и выберите <b>«На экран „Домой“»</b>.</Step>
-              <Step n={4} icon={<Check className="size-[18px] text-ok" />}>Нажмите <b>«Добавить»</b> — иконка Pixel появится среди приложений.</Step>
+              <Step n={4} icon={<Check className="size-[18px] text-ok" />}>Нажмите <b>«Добавить»</b>. Иконка Pixel появится среди приложений.</Step>
             </ol>
           </>
         ) : (
@@ -72,7 +72,7 @@ export function InstallGuideSheet({ open, onClose, onDismiss }: { open: boolean;
               <Step n={1} icon={<Compass className="size-[18px] text-info" />}>Откройте сайт в <b>Chrome</b>.</Step>
               <Step n={2} icon={<MoreVertical className="size-[18px]" />}>Нажмите меню <b>⋮</b> в правом верхнем углу.</Step>
               <Step n={3} icon={<Download className="size-[18px] text-accent" />}>Выберите <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.</Step>
-              <Step n={4} icon={<Check className="size-[18px] text-ok" />}>Подтвердите — Pixel откроется как обычное приложение.</Step>
+              <Step n={4} icon={<Check className="size-[18px] text-ok" />}>Подтвердите, и Pixel откроется как обычное приложение.</Step>
             </ol>
           </>
         )}
@@ -109,7 +109,7 @@ export function InstallBanner() {
         <button aria-label="Скрыть" onClick={dismiss} className="absolute top-2 right-2 size-9 grid place-items-center rounded-xl text-muted hover:bg-surface-2"><X className="size-4" /></button>
         <div className="flex items-center gap-3 pr-8">
           <img src="/icon-192.png" alt="" className="size-12 rounded-[14px] shrink-0 shadow-md shadow-black/40" />
-          <div className="min-w-0"><div className="font-semibold">Установите Pixel</div><div className="text-sm text-muted">Приложение на телефоне — без App Store</div></div>
+          <div className="min-w-0"><div className="font-semibold">Установите Pixel</div><div className="text-sm text-muted">Приложение на телефоне без App Store</div></div>
         </div>
         <ul className="grid grid-cols-3 gap-2">
           {perks.map(({ i: I, t }) => <li key={t} className="rounded-xl bg-surface-2 px-2 py-2.5 flex flex-col items-center gap-1.5 text-center"><I className="size-[18px] text-accent" /><span className="text-xs text-muted leading-tight">{t}</span></li>)}
