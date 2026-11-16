@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, MapPin, HelpCircle, LogOut, ChevronRight, ChevronLeft, ShieldCheck, Sparkles, Check, Phone, Navigation, Send, RotateCcw, LayoutDashboard, Plus } from 'lucide-react'
-import { Columns3, Presentation, Clock, Download, ShoppingBag } from 'lucide-react'
+import { Columns3, Presentation, Clock, Download, ShoppingBag, Store } from 'lucide-react'
 import { useShop } from '../store/shop'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore, useMe } from '../store/store'
@@ -95,6 +95,7 @@ export function ProfileScreen() {
       <div className="flex flex-col gap-5 min-w-0">
 
       <div className="rounded-2xl bg-surface divide-y divide-line overflow-hidden">
+        <Row icon={<Store className="size-4" />} label="Магазин" onClick={() => go('shop')} />
         <Row icon={<ShoppingBag className="size-4" />} label="Мои покупки" hint={shopOrdersN ? `${shopOrdersN}` : undefined} onClick={() => go('shopOrders')} />
         <Row icon={<Heart className="size-4" />} label="Избранное" hint={`${favorites.length} позиций`} onClick={() => go('favorites')} />
         <Row icon={<Columns3 className="size-4" />} label="Сравнение" hint={compareN ? `${compareN} из 3` : undefined} onClick={() => go('compare')} />

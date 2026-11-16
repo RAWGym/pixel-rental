@@ -7,6 +7,7 @@ import { DELIVERY_LABEL, SHOP_CAT_LABEL, SHOP_STATUS, TRADEIN_COND, promoDiscoun
 import { Button, IconBtn, Badge, Empty, Field, Stepper, Segmented, Toggle, cx, toast, haptic } from '../ui/kit'
 import { placeLine, money, dShort, hm, normalizeQuery, plural } from '../lib/format'
 import { isNative, postNative } from '../lib/native'
+import { trMessage } from '../i18n'
 import { PIXEL_D, LOGO_W, LOGO_H } from '../ui/logoPaths'
 
 const LIVE = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
@@ -205,7 +206,7 @@ export function ShopCartPanel({ embedded }: { embedded?: boolean }) {
       if (LIVE) { const r = await (await remote()).createShopOrder(f); if (!r.ok) return setErr(r.error); order = r.data }
       else { const r = useShop.getState().placeOrderLocal(f); if (!r.ok) return setErr(r.error); order = r.order }
       haptic(30)
-      const text = waMessage(order, { address: placeLine(point) })
+      const text = trMessage(waMessage(order, { address: placeLine(point) }))
       openWhatsApp(waLink(settings.waPhone, text))
       ;(embedded ? go : replace)('shopDone', { id: order.id })
     } finally { setBusy(false) }
@@ -315,7 +316,7 @@ export function ShopDone() {
   const wa = useShop(s => s.settings.waPhone)
   const point = useStore(s => s.settings.points.almaty)
   if (!o) return null
-  const text = waMessage(o, { address: placeLine(point) })
+  const text = trMessage(waMessage(o, { address: placeLine(point) }))
   const link = waLink(wa, text)
   const copy = async () => { try { await navigator.clipboard.writeText(text); toast('Сообщение скопировано') } catch { toast('Не удалось скопировать') } }
   return (

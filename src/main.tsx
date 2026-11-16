@@ -10,6 +10,7 @@ import { useNav } from './store/nav'
 import { useStore } from './store/store'
 import { postNative, sheetStack, isNative } from './lib/native'
 import { importKitFromHash } from './client/Extras'
+import { initI18n } from './i18n'
 
 // Аппаратная кнопка «назад» (Android) из нативной обёртки
 ;(window as any).__pxBack = () => {
@@ -69,4 +70,6 @@ function Root() {
   }, [])
   return admin ? <Suspense fallback={<Splash />}><AdminApp /></Suspense> : <ClientApp />
 }
+// язык интерфейса RU | KZ: слой перевода включается до первой отрисовки
+initI18n()
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><Root /></React.StrictMode>)

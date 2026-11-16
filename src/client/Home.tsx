@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ArrowRight, MapPin, Clock, Sparkles } from 'lucide-react'
+import { ArrowRight, MapPin, Clock, Sparkles, Store } from 'lucide-react'
 import { SCENES, resolveKit } from '../data/scenes'
 import { SCENE_ICON } from './Extras'
 import { useMe } from '../store/store'
@@ -67,6 +67,7 @@ export function Home() {
         <div className="flex flex-col sm:flex-row gap-2.5 max-w-2xl">
           <DateBar className="flex-1 min-w-0 bg-surface-2" />
           <Button size="lg" onClick={() => go('kit')} className="sm:w-auto"><Sparkles className="size-[18px]" /> Подобрать комплект</Button>
+          <Button size="lg" variant="soft" onClick={() => go('shop')} className="sm:w-auto"><Store className="size-[18px]" /> Магазин</Button>
         </div>
       </section>
 

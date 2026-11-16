@@ -18,6 +18,7 @@ import { SceneScreen, CompareScreen, CompareBar, Onboarding } from './Extras'
 import { PullToRefresh, UpdateBanner } from './Refresh'
 import { ShopScreen, ShopProductScreen, ShopCartScreen, ShopDone, ShopOrders } from './Shop'
 import { useShop } from '../store/shop'
+import { useLang } from '../i18n'
 
 const SCREENS: Record<RouteName, () => JSX.Element | null> = {
   home: Home, catalog: Catalog, product: ProductScreen, search: Catalog, cart: CartScreen, checkout: Checkout, success: Success,
@@ -173,12 +174,13 @@ export function ClientApp() {
     <div className="min-h-dvh">
       <AnimatePresence>{splash && <Splash done={() => { setSplash(false); try { sessionStorage.setItem('px-splash', '1') } catch { /* noop */ } }} />}</AnimatePresence>
       <header className="sticky top-0 z-50 bg-bg border-b border-line/50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <div className="site-wrap h-14 flex items-center gap-3">
-          <button onClick={() => tab('home')} aria-label="На главную" className="shrink-0"><Logo className="hidden min-[380px]:block h-[22px] desk:h-[30px] w-auto" /><Logo className="min-[380px]:hidden h-6 w-auto" sub={false} /></button>
-          <button onClick={() => { setCity(city === 'almaty' ? 'astana' : 'almaty'); haptic() }} className="ml-1 h-8 pl-3 pr-2 rounded-full bg-surface-2 text-sm font-medium flex items-center gap-1 text-fg/90 hover:bg-surface-3 transition-colors">
+        <div className="site-wrap h-14 flex items-center gap-3 max-[399px]:gap-2">
+          <button onClick={() => tab('home')} aria-label="На главную" className="shrink-0"><Logo className="hidden min-[480px]:block h-[22px] desk:h-[30px] w-auto" /><Logo className="min-[480px]:hidden h-[22px] max-[359px]:h-[18px] w-auto" sub={false} /></button>
+          <button onClick={() => { setCity(city === 'almaty' ? 'astana' : 'almaty'); haptic() }} className="ml-1 max-[399px]:ml-0 h-8 pl-3 max-[359px]:pl-2.5 pr-2 rounded-full bg-surface-2 text-sm font-medium flex items-center gap-1 text-fg/90 hover:bg-surface-3 transition-colors">
             <AnimatePresence mode="wait" initial={false}><motion.span key={city} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }}>{city === 'almaty' ? 'Алматы' : 'Астана'}</motion.span></AnimatePresence>
             <ChevronDown className="size-3.5 text-muted" />
           </button>
+          <LangSwitch />
           {/* сайт (≥1024): верхнее меню вместо таббара */}
           <nav className="hidden desk:flex items-center gap-1 ml-6">
             {SITE_NAV.map(t => {
@@ -194,8 +196,8 @@ export function ClientApp() {
           </nav>
           <div className="ml-auto flex items-center gap-1">
             {/* магазин: на телефоне кнопка в шапке (таб-бар не перегружаем), на ПК пункт меню */}
-            <button aria-label="Магазин" onClick={() => useNav.getState().go('shop')} className="desk:hidden h-10 px-2.5 grid place-items-center rounded-xl hover:bg-surface-2"><Store className="size-5" /></button>
-            <button aria-label="Поиск" onClick={() => { tab('catalog'); setTimeout(() => document.getElementById('catalog-search')?.focus(), 250) }} className="size-10 grid place-items-center rounded-xl hover:bg-surface-2"><Search className="size-5" /></button>
+            <button aria-label="Магазин" onClick={() => useNav.getState().go('shop')} className="desk:hidden max-[399px]:hidden size-10 grid place-items-center rounded-xl hover:bg-surface-2"><Store className="size-5" /></button>
+            <button aria-label="Поиск" onClick={() => { tab('catalog'); setTimeout(() => document.getElementById('catalog-search')?.focus(), 250) }} className="size-10 max-[359px]:size-9 grid place-items-center rounded-xl hover:bg-surface-2"><Search className="size-5" /></button>
             <button aria-label="Избранное" onClick={() => useNav.getState().go('favorites')} className="hidden desk:grid size-10 place-items-center rounded-xl hover:bg-surface-2"><Heart className="size-5" /></button>
           </div>
         </div>
@@ -232,4 +234,22 @@ export function ClientApp() {
       <Toasts bottom={170} />
     </div>
   )
+}
+
+/** RU | KZ: компактный переключатель в шапке; выбор сохраняется */
+function LangSwitch() {
+  const lang = useLang(s => s.lang), set = useLang(s => s.set)
+  return (<>
+    {/* телефон: одна кнопка-переключатель */}
+    <button data-no-i18n aria-label={lang === 'ru' ? 'Қазақ тіліне ауысу' : 'Переключить на русский'} onClick={() => { set(lang === 'ru' ? 'kk' : 'ru'); haptic(5) }}
+      className="desk:hidden shrink-0 h-8 px-1 rounded-full bg-surface-2 text-[11px] font-semibold flex items-center">
+      {(['ru', 'kk'] as const).map(l => <span key={l} className={cx('h-6 px-1.5 grid place-items-center rounded-full transition-colors duration-200', lang === l ? 'bg-fg text-bg' : 'text-muted')}>{l === 'ru' ? 'RU' : 'KZ'}</span>)}
+    </button>
+    <div role="group" aria-label="Язык" data-no-i18n className="hidden desk:flex shrink-0 h-8 p-0.5 rounded-full bg-surface-2 text-xs font-semibold">
+      {(['ru', 'kk'] as const).map(l => (
+        <button key={l} aria-pressed={lang === l} onClick={() => { if (lang !== l) { set(l); haptic(5) } }}
+          className={cx('h-7 min-w-8 px-2 rounded-full transition-colors duration-200', lang === l ? 'bg-fg text-bg' : 'text-muted hover:text-fg')}>{l === 'ru' ? 'RU' : 'KZ'}</button>
+      ))}
+    </div>
+  </>)
 }

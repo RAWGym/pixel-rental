@@ -100,6 +100,7 @@ export async function hydrate() {
       if (me) {
         const { data: b } = await c.from('bookings').select(BOOKING_SELECT).eq('customer_id', me.id).order('created_at', { ascending: false })
         Object.assign(patch, { customers: [toCustomer(me)], meId: me.id, bookings: (b ?? []).map(toBooking) })
+        if (me.locale === 'ru' || me.locale === 'kk') import('../i18n').then(m => { if (m.useLang.getState().lang !== me.locale) m.useLang.getState().set(me.locale) })
       }
     }
   }
@@ -239,6 +240,8 @@ export async function scanUrls(customerId: string) {
 /* ---------- правки из админки → база ---------- */
 export function mirrorStoreWrites() {
   const c = client()
+  // язык интерфейса клиента — в его профиль
+  import('../i18n').then(m => m.useLang.subscribe((s, prev) => { const id = st().meId; if (id && s.lang !== prev.lang) c.from('customers').update({ locale: s.lang }).eq('id', id).then(r => { if (r.error) console.warn('[i18n]', r.error.message) }) }))
   const s = useStore.getState()
   const warn = (e: any) => { if (e) console.warn('[supabase]', e.message ?? e) }
   const wrap = <K extends keyof typeof s>(key: K, after: (...args: any[]) => Promise<unknown> | void) => {
