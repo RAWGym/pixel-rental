@@ -8,6 +8,7 @@ import type { CategoryId } from '../data/types'
 import { haptic, cx, Sheet, Button, Toggle, Empty, Segmented } from '../ui/kit'
 import { ProductCard } from './common'
 import { availMap } from '../lib/availability'
+import { byPopularity } from '../lib/popular'
 import { normalizeQuery, plural } from '../lib/format'
 
 const CHUNK = 24
@@ -52,7 +53,7 @@ export function Catalog() {
     if (onlyFree) { const m = availMap(units, bookings, city, range.start, range.end); l = l.filter(p => (m.get(p.id)?.free ?? 0) > 0) }
     if (freeToday) { const m = availMap(units, bookings, city, today.start, today.end); l = l.filter(p => (m.get(p.id)?.free ?? 0) > 0) }
     const s = [...l]
-    if (sort === 'popular') s.sort((a, b) => (pop.get(b.id) ?? 0) - (pop.get(a.id) ?? 0))
+    if (sort === 'popular') s.sort(byPopularity(pop))
     if (sort === 'new') s.sort((a, b) => Number(b.isNew) - Number(a.isNew) || b.createdAt - a.createdAt)
     if (sort === 'cheap') s.sort((a, b) => a.price - b.price)
     if (sort === 'expensive') s.sort((a, b) => b.price - a.price)

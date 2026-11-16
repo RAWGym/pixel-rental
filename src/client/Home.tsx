@@ -14,6 +14,7 @@ import { Banners } from './Banners'
 import { InstallBanner } from './Install'
 import { money } from '../lib/format'
 import { availMap } from '../lib/availability'
+import { byPopularity } from '../lib/popular'
 
 
 /** Приветствие по времени суток */
@@ -33,7 +34,7 @@ export function Home() {
   const popular = useMemo(() => {
     const cnt = new Map<string, number>()
     for (const b of bookings) for (const i of b.items) cnt.set(i.productId, (cnt.get(i.productId) ?? 0) + 1)
-    return products.filter(p => !p.hidden && ['cameras', 'light', 'sound', 'gimbals', 'lenses'].includes(p.category)).sort((a, b) => (cnt.get(b.id) ?? 0) - (cnt.get(a.id) ?? 0)).slice(0, 8)
+    return products.filter(p => !p.hidden && ['cameras', 'light', 'sound', 'gimbals', 'lenses'].includes(p.category)).sort(byPopularity(cnt)).slice(0, 8)
   }, [products, bookings])
   const counts = useMemo(() => { const m = new Map<string, number>(); for (const p of products) if (!p.hidden) m.set(p.category, (m.get(p.category) ?? 0) + 1); return m }, [products])
   const point = settings.points[city]
