@@ -14,6 +14,7 @@ import { BookingsScreen, BookingDetail } from './Bookings'
 import { ProfileScreen, Favorites, KitBuilder, Contacts, Terms } from './Profile'
 import { AuthScreen, VerifyScreen } from './Auth'
 import { SceneScreen, CompareScreen, CompareBar, Onboarding } from './Extras'
+import { PullToRefresh, UpdateBanner } from './Refresh'
 
 const SCREENS: Record<RouteName, () => JSX.Element | null> = {
   home: Home, catalog: Catalog, product: ProductScreen, search: Catalog, cart: CartScreen, checkout: Checkout, success: Success,
@@ -164,7 +165,7 @@ export function ClientApp() {
   return (
     <div className="min-h-dvh">
       <AnimatePresence>{splash && <Splash done={() => { setSplash(false); try { sessionStorage.setItem('px-splash', '1') } catch { /* noop */ } }} />}</AnimatePresence>
-      <header className="sticky z-50 bg-bg border-b border-line/50" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+      <header className="sticky top-0 z-50 bg-bg border-b border-line/50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="site-wrap h-14 flex items-center gap-3">
           <button onClick={() => tab('home')} aria-label="На главную" className="shrink-0"><Logo className="h-7 w-auto" sub={false} /></button>
           <button onClick={() => { setCity(city === 'almaty' ? 'astana' : 'almaty'); haptic() }} className="ml-1 h-8 pl-3 pr-2 rounded-full bg-surface-2 text-sm font-medium flex items-center gap-1 text-fg/90 hover:bg-surface-3 transition-colors">
@@ -189,7 +190,7 @@ export function ClientApp() {
         </div>
       </header>
 
-      <main className="site-wrap pt-5 pb-24 desk:pb-10">
+      <main className="site-wrap pt-4 pb-[calc(72px+env(safe-area-inset-bottom,0px))] desk:pb-10">
         {mounted.map(r => <TabRoot key={r.key} r={r} on={r.name === root.name} />)}
       </main>
       <SiteFooter />
@@ -198,12 +199,12 @@ export function ClientApp() {
       {ghost && ghost.out && <Layer key={ghost.r.key} r={ghost.r} cls="layer-out" />}
 
       <nav className="desk:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg border-t border-line/60 gutter" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-        <div className="grid grid-cols-5 h-16">
+        <div className="grid grid-cols-5 h-14">
           {TABS.map(t => {
             const on = active === t.name
             return (
-              <button key={t.name} onClick={() => { tab(t.name); haptic(5) }} className={cx('relative flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors', on ? 'text-fg' : 'text-faint')}>
-                <span className="relative grid place-items-center h-7 w-12">
+              <button key={t.name} onClick={() => { tab(t.name); haptic(5) }} className={cx('relative flex flex-col items-center justify-center gap-0.5 text-[11px] leading-none font-medium transition-colors', on ? 'text-fg' : 'text-faint')}>
+                <span className="relative grid place-items-center h-7 w-11">
                   {on && <span className="absolute inset-0 rounded-full bg-surface-3" />}
                   <t.icon className={cx('relative size-[20px]', on && 'text-accent')} strokeWidth={on ? 2 : 1.7} />{t.name === 'cart' && <CartCount />}
                 </span>
@@ -214,6 +215,8 @@ export function ClientApp() {
         </div>
       </nav>
       <CompareBar />
+      <PullToRefresh />
+      <UpdateBanner />
       <Onboarding />
       <Toasts bottom={170} />
     </div>

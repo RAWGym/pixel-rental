@@ -132,7 +132,7 @@ export function SceneScreen() {
       </div>
       <div className="hidden desk:block"><Button block size="lg" disabled={!chosen.length} onClick={takeAll}>Всё в корзину · {money(pr.total)}</Button></div>
 
-      <div className="desk:hidden fixed left-0 right-0 z-40 gutter pb-2" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="desk:hidden fixed left-0 right-0 z-40 gutter pb-2" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
         <Button block size="lg" className="shadow-xl shadow-black/50" disabled={!chosen.length} onClick={takeAll}>Всё в корзину · {money(pr.total)}</Button>
       </div>
     </div>
@@ -204,7 +204,7 @@ export function CompareBar() {
   if (n < 2 || !['home', 'catalog', 'favorites'].includes(top) || (top === 'home' && root !== 'home')) return null
   return (
     <button onClick={() => go('compare')} className="press fade-in fixed z-[45] left-1/2 -translate-x-1/2 h-10 pl-3.5 pr-3 rounded-full bg-fg text-bg text-sm font-semibold flex items-center gap-2 shadow-xl shadow-black/40"
-      style={{ bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))' }}>
+      style={{ bottom: 'calc(66px + env(safe-area-inset-bottom, 0px))' }}>
       <Columns3 className="size-4" />Сравнение · {n}<ArrowRight className="size-4" />
     </button>
   )

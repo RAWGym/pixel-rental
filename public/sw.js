@@ -7,7 +7,8 @@ const IMAGES = 'px-images-v1' // фото с pixelrental.kz
 const PRECACHE = __PRECACHE__
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(SHELL).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting()))
+  // новая версия ждёт, пока пользователь нажмёт «Обновить» (баннер в приложении), — без внезапной перезагрузки
+  e.waitUntil(caches.open(SHELL).then(c => c.addAll(PRECACHE)))
 })
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('px-shell-') && k !== SHELL).map(k => caches.delete(k)))).then(() => self.clients.claim()))

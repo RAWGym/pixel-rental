@@ -263,7 +263,7 @@ export function ProductScreen() {
       )}
 
       {/* нижняя панель: цена и кнопка всегда под пальцем */}
-      <div className="desk:hidden fixed left-0 right-0 z-40 gutter pb-2" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="desk:hidden fixed left-0 right-0 z-40 gutter pb-2" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="flex items-center gap-3 bg-surface-3 rounded-2xl p-2 pl-4 shadow-xl shadow-black/50">
           <div className="flex-1 min-w-0">
             <div className="tnum font-semibold whitespace-nowrap">{money(pr.total)}</div>

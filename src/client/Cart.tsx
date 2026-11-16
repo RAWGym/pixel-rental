@@ -130,7 +130,7 @@ export function CartScreen() {
         </div>
       </aside>
 
-      <div className="lg:hidden fixed left-0 right-0 z-40 gutter pb-3" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="lg:hidden fixed left-0 right-0 z-40 gutter pb-3" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
         <Button size="lg" block disabled={conflicts.length > 0} onClick={() => go('checkout')} className="shadow-2xl shadow-black/60">
           Оформить · <span className="tnum"><AnimatedNumber value={t.total} format={n => money(n)} /></span>
         </Button>

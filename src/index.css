@@ -58,8 +58,11 @@
 :root { color-scheme: dark; }
 html, body { background: var(--color-bg); color: var(--color-fg); overflow-x: clip; max-width: 100%; }
 #root { min-height: 100dvh; overflow-x: clip; }
-body { font-family: var(--font-sans); font-size: 0.9375rem; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--color-bg); }
+body { font-family: var(--font-sans); font-size: 0.9375rem; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+/* интерфейс «не плавает»: без резинового растягивания, без горизонтального сдвига и двойного тапа-зума */
+html { overscroll-behavior: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { touch-action: pan-x pan-y; }
+.standalone, .standalone body { overscroll-behavior: none; }
 h1, h2, h3 { text-wrap: balance; letter-spacing: -0.01em; }
 .font-display { letter-spacing: -0.01em; }
 .font-mono { font-variant-numeric: tabular-nums; letter-spacing: 0; }

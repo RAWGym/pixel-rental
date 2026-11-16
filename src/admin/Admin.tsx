@@ -142,7 +142,7 @@ export function AdminApp() {
   return (
     <div className="adm" data-theme={theme}>
       {/* верхняя панель-«пилюля»: логотип, разделы, поиск, уведомления, профиль */}
-      <header className="sticky z-40 adm-shell pt-3 enter-top" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+      <header className="sticky top-0 z-40 adm-shell enter-top" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))' }}>
         <div className="glass-bar adm-wrap h-16 px-2.5 flex items-center gap-2 rounded-[22px]">
           <div className="flex items-center gap-2.5 pl-1 pr-2 min-w-0">
             <span className="hidden sm:flex items-center gap-3 min-w-0">

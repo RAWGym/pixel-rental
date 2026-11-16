@@ -345,3 +345,38 @@ function startRealtime() {
   addEventListener('online', resync)
 }
 function stopRealtime() { if (channel) { client().removeChannel(channel); channel = null } }
+
+/* ---------- вход клиента по почте и паролю ---------- */
+async function loadMe(): Promise<Customer | null> {
+  const c = client()
+  const { data: { user } } = await c.auth.getUser()
+  if (!user) return null
+  const { data: me } = await c.from('customers').select('*').eq('user_id', user.id).maybeSingle()
+  if (!me) return null
+  const cu = toCustomer(me)
+  useStore.setState(s => ({ customers: [cu, ...s.customers.filter(x => x.id !== cu.id)], meId: cu.id }))
+  await hydrate()
+  return cu
+}
+export async function clientEmailSignIn(email: string, password: string): Promise<Result<{ customer: Customer | null }>> {
+  const { error } = await client().auth.signInWithPassword({ email: email.trim(), password })
+  if (error) return fail(error.message === 'Invalid login credentials' ? { message: 'Неверная почта или пароль' } : error.message === 'Email not confirmed' ? { message: 'Подтвердите почту по ссылке из письма' } : error)
+  return ok({ customer: await loadMe() })
+}
+export async function clientEmailSignUp(email: string, password: string): Promise<Result<{ confirm: boolean }>> {
+  const { data, error } = await client().auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: `${location.origin}/` } })
+  if (error) return fail(error.message.includes('already registered') ? { message: 'Такая почта уже зарегистрирована — войдите' } : error)
+  return ok({ confirm: !data.session })
+}
+export async function clientResetPassword(email: string): Promise<Result<null>> {
+  const { error } = await client().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/` })
+  return error ? fail(error) : ok(null)
+}
+export async function clientSetPassword(password: string): Promise<Result<{ customer: Customer | null }>> {
+  const { error } = await client().auth.updateUser({ password })
+  return error ? fail(error) : ok({ customer: await loadMe() })
+}
+/** пришли по ссылке «сброс пароля» на сайт — показываем форму нового пароля */
+export function watchClientRecovery(open: () => void) {
+  client().auth.onAuthStateChange(ev => { if (ev === 'PASSWORD_RECOVERY' && !location.pathname.startsWith('/admin')) open() })
+}

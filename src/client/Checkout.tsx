@@ -139,7 +139,7 @@ function CheckoutForm() {
         <Button size="lg" block className="hidden lg:flex" onClick={submit} disabled={busy}>{busy ? <Pixels /> : 'Забронировать'}</Button>
       </aside>
 
-      <div className="lg:hidden fixed left-0 right-0 z-40 gutter pb-3" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="lg:hidden fixed left-0 right-0 z-40 gutter pb-3" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
         <Button size="lg" block onClick={submit} disabled={busy} className="shadow-2xl shadow-black/60">{busy ? <Pixels /> : <>Забронировать · <span className="tnum">{money(total)}</span></>}</Button>
       </div>
     </div>

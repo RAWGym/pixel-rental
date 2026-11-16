@@ -10,6 +10,7 @@ import { ProductCard, DateBar, useAvailMap } from './common'
 import { LoginCard } from './Bookings'
 import { VerificationBadge } from './Auth'
 import { useInstall } from './Install'
+import { refreshApp } from './Refresh'
 import { verificationOf } from '../data/types'
 import { PRESETS, resolvePreset } from '../data/presets'
 import { freeUnits } from '../lib/availability'
@@ -92,6 +93,7 @@ export function ProfileScreen() {
         <Row icon={<Columns3 className="size-4" />} label="Сравнение" hint={compareN ? `${compareN} товара рядом` : 'Положите рядом до трёх товаров'} onClick={() => go('compare')} />
         <Row icon={<Sparkles className="size-4" />} label="Собрать комплект под съёмку" hint="Готовые сетапы и подбор с менеджером" onClick={() => go('kit')} />
         {inst.available && <Row icon={<Download className="size-4" />} label="Установить приложение" hint="На главный экран телефона или компьютера" onClick={inst.run} />}
+        <Row icon={<RotateCcw className="size-4" />} label="Обновить приложение" hint="Свежие данные и последняя версия" onClick={async () => { toast('Обновляем…'); await refreshApp(); toast('Готово, всё актуально') }} />
         <Row icon={<MapPin className="size-4" />} label="Контакты и адреса" hint="Алматы, Астана" onClick={() => go('contacts')} />
         <Row icon={<HelpCircle className="size-4" />} label="Условия аренды и FAQ" onClick={() => go('terms')} />
       </div>
@@ -189,7 +191,7 @@ export function KitBuilder() {
         <span><span className="block font-semibold">Не нашли свою задачу?</span><span className="block text-sm text-muted">Опишите съёмку, менеджер соберёт комплект под бюджет</span></span>
       </button>
 
-      <div className="fixed md:static left-0 right-0 z-40 gutter md:px-0 pb-3 md:pb-0" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="fixed md:static left-0 right-0 z-40 gutter md:px-0 pb-3 md:pb-0" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
         <Button size="lg" block disabled={!chosen.length} className="shadow-2xl shadow-black/60 md:shadow-none" onClick={() => {
           chosen.forEach(i => addToCart(i.product.id, Math.min(i.qty, i.free))); haptic(20); toast(`${chosen.length} позиций в корзине`); tab('cart')
         }}>Добавить {chosen.length} · <span className="tnum">{money(perDay * days)}</span><span className="text-xs opacity-70">за {daysWord(days)}</span></Button>

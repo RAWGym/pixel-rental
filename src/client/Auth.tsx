@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
-import { ChevronLeft, Camera, Upload, RotateCcw, ShieldCheck, Check, IdCard, Clock, XCircle } from 'lucide-react'
+import { ChevronLeft, Camera, Upload, RotateCcw, ShieldCheck, Check, IdCard, Clock, XCircle, Mail } from 'lucide-react'
 import { useNav, useRoute } from '../store/nav'
 import { useMe } from '../store/store'
 import { api, DEMO_OTP } from '../data/api'
+import { supabaseConfigured, clientEmailSignIn, clientEmailSignUp, clientResetPassword, clientSetPassword } from '../data/supabase'
 import { verificationOf, VERIFICATION_LABEL, type Verification } from '../data/types'
 import { Button, IconBtn, Field, cx, toast, haptic } from '../ui/kit'
 
@@ -101,7 +102,7 @@ export function IdScanStep({ onDone, submitLabel = 'Отправить на пр
   )
 }
 
-type Step = 'phone' | 'code' | 'profile' | 'scan' | 'done'
+type Step = 'phone' | 'code' | 'email' | 'recovery' | 'profile' | 'scan' | 'done'
 
 /** Вход и регистрация: телефон → код → (новый клиент) имя/ИИН → скан удостоверения */
 export function AuthScreen() {
@@ -109,8 +110,13 @@ export function AuthScreen() {
   const back = useNav(s => s.back)
   const me = useMe()
   const next = route.params?.next as string | undefined
-  const [step, setStep] = useState<Step>('phone')
+  const [step, setStep] = useState<Step>(route.params?.recovery ? 'recovery' : 'phone')
   const [phone, setPhone] = useState('+7 ')
+  // вход по почте (только с общей базой): вход / регистрация / сброс пароля
+  const [emailMode, setEmailMode] = useState<'signin' | 'signup' | 'reset'>('signin')
+  const [password, setPassword] = useState('')
+  const [notice, setNotice] = useState('')
+  const [viaEmail, setViaEmail] = useState(false)
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
   const [iin, setIin] = useState('')
@@ -132,7 +138,26 @@ export function AuthScreen() {
     setErr('')
     if (r.data.customer) { haptic(20); toast(`С возвращением, ${r.data.customer.name.split(' ')[0]}`); finish() } else setStep('profile')
   }
+  const emailSubmit = async () => {
+    setErr(''); setNotice(''); setBusy(true)
+    try {
+      if (emailMode === 'reset') { const r = await clientResetPassword(email); if (!r.ok) setErr(r.error); else setNotice('Если такая почта есть, мы отправили ссылку для нового пароля.'); return }
+      if (password.length < 8) { setErr('Пароль — минимум 8 символов'); return }
+      if (emailMode === 'signup') { const r = await clientEmailSignUp(email, password); if (!r.ok) setErr(r.error); else if (r.data.confirm) setNotice('Готово! Подтвердите почту по ссылке из письма, затем войдите здесь.'); else { setViaEmail(true); setStep('profile') } return }
+      const r = await clientEmailSignIn(email, password)
+      if (!r.ok) { setErr(r.error); return }
+      if (r.data.customer) { haptic(20); toast(`С возвращением, ${r.data.customer.name.split(' ')[0]}`); finish() } else { setViaEmail(true); setStep('profile') }
+    } finally { setBusy(false) }
+  }
+  const setNewPassword = async () => {
+    if (password.length < 8) return setErr('Минимум 8 символов')
+    setBusy(true); const r = await clientSetPassword(password); setBusy(false)
+    if (!r.ok) return setErr(r.error)
+    toast('Пароль обновлён')
+    if (r.data.customer) finish(); else { setViaEmail(true); setStep('profile') }
+  }
   const saveProfile = () => {
+    if (viaEmail && phone.replace(/\D/g, '').length < 11) return setErr('Укажите телефон для связи')
     if (name.trim().length < 2) return setErr('Укажите имя и фамилию')
     if (!/^\d{12}$/.test(iin)) return setErr('ИИН — 12 цифр')
     setErr(''); setStep('scan')
@@ -143,17 +168,17 @@ export function AuthScreen() {
     haptic(30); setStep('done')
   }
 
-  const STEPS: Step[] = ['phone', 'code', 'profile', 'scan']
+  const STEPS: Step[] = viaEmail || step === 'email' ? ['email', 'profile', 'scan'] : ['phone', 'code', 'profile', 'scan']
   const idx = STEPS.indexOf(step)
-  const title = { phone: 'Вход', code: 'Код из WhatsApp', profile: 'Знакомимся', scan: 'Скан удостоверения', done: 'Профиль на проверке' }[step]
+  const title = { phone: 'Вход', code: 'Код из WhatsApp', email: emailMode === 'signup' ? 'Регистрация по почте' : emailMode === 'reset' ? 'Сброс пароля' : 'Вход по почте', recovery: 'Новый пароль', profile: 'Знакомимся', scan: 'Скан удостоверения', done: 'Профиль на проверке' }[step]
 
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 pb-10">
       <div className="flex items-center gap-3">
-        <IconBtn label="Назад" onClick={() => (step === 'code' ? setStep('phone') : step === 'scan' ? setStep('profile') : back())}><ChevronLeft className="size-5" /></IconBtn>
+        <IconBtn label="Назад" onClick={() => (step === 'code' || step === 'email' ? setStep('phone') : step === 'scan' ? setStep('profile') : back())}><ChevronLeft className="size-5" /></IconBtn>
         <h1 className="text-xl font-semibold flex-1 min-w-0">{title}</h1>
       </div>
-      {step !== 'done' && (
+      {step !== 'done' && step !== 'recovery' && (
         <div className="flex gap-1.5" aria-hidden>{STEPS.map((s, i) => <span key={s} className={cx('h-1 flex-1 rounded-full transition-colors duration-200', i <= idx ? 'bg-accent' : 'bg-surface-3')} />)}</div>
       )}
 
@@ -164,7 +189,36 @@ export function AuthScreen() {
             <input id="auth-phone" autoFocus autoComplete="tel" inputMode="tel" className="field tnum" value={phone} onChange={e => setPhone(fmtPhone(e.target.value))} onKeyDown={e => e.key === 'Enter' && sendCode()} />
           </Field>
           <Button block size="lg" disabled={phone.replace(/\D/g, '').length < 11 || busy} onClick={sendCode}>Получить код</Button>
+          {supabaseConfigured && (<>
+            <div className="flex items-center gap-3 text-xs text-faint"><span className="h-px flex-1 bg-line" />или<span className="h-px flex-1 bg-line" /></div>
+            <Button block size="lg" variant="soft" onClick={() => { setErr(''); setStep('email') }}><Mail className="size-5" /> Войти по почте и паролю</Button>
+          </>)}
         </div>
+      )}
+
+      {step === 'email' && (
+        <form className="flex flex-col gap-4" onSubmit={e => { e.preventDefault(); emailSubmit() }}>
+          <p className="text-muted">{emailMode === 'signup' ? 'Создайте аккаунт: после подтверждения почты заполните профиль и сфотографируйте удостоверение.' : emailMode === 'reset' ? 'Пришлём ссылку — по ней вы зададите новый пароль на сайте Pixel.' : 'Войдите почтой и паролем, если регистрировались так.'}</p>
+          <Field label="Почта"><input id="auth-email" type="email" autoFocus autoComplete="email" className="field" value={email} onChange={e => setEmail(e.target.value)} required /></Field>
+          {emailMode !== 'reset' && <Field label="Пароль" hint={emailMode === 'signup' ? 'Минимум 8 символов' : undefined}><input id="auth-pass" type="password" autoComplete={emailMode === 'signup' ? 'new-password' : 'current-password'} className="field" value={password} onChange={e => setPassword(e.target.value)} required /></Field>}
+          {err && <div className="text-sm text-bad">{err}</div>}
+          {notice && <div className="rounded-xl bg-ok/10 text-sm p-3">{notice}</div>}
+          <Button type="submit" block size="lg" disabled={busy}>{busy ? 'Секунду…' : emailMode === 'signup' ? 'Создать аккаунт' : emailMode === 'reset' ? 'Отправить ссылку' : 'Войти'}</Button>
+          <div className="flex justify-between text-sm">
+            {emailMode === 'signin' ? <button type="button" className="text-muted" onClick={() => { setEmailMode('reset'); setErr(''); setNotice('') }}>Забыли пароль?</button>
+              : <button type="button" className="text-muted" onClick={() => { setEmailMode('signin'); setErr(''); setNotice('') }}>← Ко входу</button>}
+            {emailMode === 'signin' && <button type="button" className="text-accent font-medium" onClick={() => { setEmailMode('signup'); setErr(''); setNotice('') }}>Создать аккаунт</button>}
+          </div>
+        </form>
+      )}
+
+      {step === 'recovery' && (
+        <form className="flex flex-col gap-4" onSubmit={e => { e.preventDefault(); setNewPassword() }}>
+          <p className="text-muted">Придумайте новый пароль для входа по почте.</p>
+          <Field label="Новый пароль" hint="Минимум 8 символов"><input id="auth-newpass" type="password" autoFocus autoComplete="new-password" className="field" value={password} onChange={e => setPassword(e.target.value)} /></Field>
+          {err && <div className="text-sm text-bad">{err}</div>}
+          <Button type="submit" block size="lg" disabled={busy}>Сохранить</Button>
+        </form>
       )}
 
       {step === 'code' && (
@@ -181,6 +235,7 @@ export function AuthScreen() {
       {step === 'profile' && (
         <div className="flex flex-col gap-4">
           <p className="text-muted">Вы у нас впервые. Данные нужны для договора аренды.</p>
+          {viaEmail && <Field label="Телефон" hint="Для связи по брони и WhatsApp"><input id="reg-phone" inputMode="tel" autoComplete="tel" className="field tnum" value={phone} onChange={e => setPhone(fmtPhone(e.target.value))} /></Field>}
           <Field label="Имя и фамилия"><input id="reg-name" autoFocus autoComplete="name" className="field" value={name} onChange={e => setName(e.target.value)} placeholder="Айдана Сейткали" /></Field>
           <Field label="ИИН" hint="12 цифр, как в удостоверении"><input id="reg-iin" inputMode="numeric" className="field tnum" value={iin} onChange={e => setIin(e.target.value.replace(/\D/g, '').slice(0, 12))} placeholder="000000000000" /></Field>
           <Field label="Email (необязательно)"><input id="reg-email" type="email" autoComplete="email" className="field" value={email} onChange={e => setEmail(e.target.value)} placeholder="для чеков" /></Field>

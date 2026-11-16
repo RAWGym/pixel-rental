@@ -59,7 +59,7 @@ export function Home() {
       <Banners />
       <InstallBanner />
       {/* Hero: только текст и даты — без фото, фото живут в подборках */}
-      <section className="rounded-3xl bg-surface px-5 py-6 md:px-8 md:py-8 flex flex-col gap-4">
+      <section className="rounded-3xl bg-surface px-4 py-5 sm:px-6 md:px-8 md:py-8 flex flex-col gap-4">
         <div>
           <div className="label mb-1.5">{hello(me?.name)}</div>
           <h1 className="text-[clamp(22px,6vw,28px)] leading-tight font-semibold">Техника под любую съёмку<span className="text-muted"> — заберите сегодня, 24/7</span></h1>
