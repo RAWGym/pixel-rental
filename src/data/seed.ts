@@ -154,7 +154,8 @@ const CUSTOMER_NAMES = [
 ]
 const COMPANIES = ['Northern Lights Production', 'Steppe Films', 'Kino Lab', 'Studio 7', 'Wedding Story KZ', 'Brand Media', undefined, undefined, undefined, undefined]
 
-export function buildAll() {
+/** history: false — только каталог и справочники (когда данные приходят из Supabase) */
+export function buildAll(opts: { history?: boolean } = {}) {
   const r = mulberry32(20261115)
   const now = Date.now()
   const day = 86400000
@@ -206,6 +207,7 @@ export function buildAll() {
   }
 
   // брони
+  if (opts.history === false) return { products: products.map(({ _status, ...p }) => p as Product), units, customers: [], roles, staff, settings, bookings: [] as Booking[], leads: [] as Lead[] }
   const bookings: Booking[] = []
   const unitBusy = new Map<string, [number, number][]>()
   const free = (u: Unit, s: number, e: number) => !(unitBusy.get(u.id) || []).some(([a, b]) => s < b && a < e)

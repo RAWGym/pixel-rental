@@ -61,7 +61,7 @@ export function Banners() {
         className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none rounded-2xl bg-surface overscroll-x-contain">
         {BANNERS.map((b, i) => (
           <div key={b.src} className="snap-center snap-always shrink-0 w-full aspect-[2.19/1] max-h-[300px]" aria-roledescription="slide" aria-label={`${i + 1} из ${BANNERS.length}`}>
-            <img src={b.src} alt={b.alt} draggable={false} decoding="async" loading={i === 0 ? 'eager' : 'lazy'} className="size-full object-cover" />
+            <img src={b.src} alt={b.alt} draggable={false} decoding="async" loading={i === 0 ? 'eager' : 'lazy'} {...(i === 0 ? { fetchPriority: 'high' as const } : {})} className="size-full object-cover" />
           </div>
         ))}
       </div>
@@ -73,10 +73,10 @@ export function Banners() {
           {d === 'prev' ? <ChevronLeft className="size-5" /> : <ChevronRight className="size-5" />}
         </button>
       ))}
-      <div className="mt-2 flex justify-center gap-1.5">
+      <div className="mt-1 flex justify-center">
         {BANNERS.map((_, i) => (
           <button key={i} aria-label={`Баннер ${i + 1}`} onClick={() => { lastUser.current = Date.now(); goTo(i) }}
-            className="h-4 grid place-items-center">
+            className="h-6 min-w-6 px-1 grid place-items-center">
             <span className={cx('block h-1.5 rounded-full transition-[width,background-color] duration-300', i === idx ? 'w-4 bg-accent' : 'w-1.5 bg-line-2')} />
           </button>
         ))}

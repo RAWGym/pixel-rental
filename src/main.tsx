@@ -28,10 +28,18 @@ postNative({ type: 'ready' })
 importKitFromHash()
 window.addEventListener('hashchange', () => { importKitFromHash() })
 initDevice()
+// общая база: если заданы ключи Supabase — подключаем её (код адаптера грузится отдельным чанком), иначе демо-режим
+if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  Promise.all([import('./data/supabase'), import('./data/api')]).then(async ([m, a]) => {
+    a.setApi(m.SupabaseAdapter)
+    m.mirrorStoreWrites()
+    await m.hydrate().catch(e => console.warn('[supabase] hydrate', e))
+  })
+}
 // ярлыки PWA (?tab=catalog) — открываем нужную вкладку
 { const t = new URLSearchParams(location.search).get('tab'); if (t && ['catalog', 'cart', 'bookings', 'profile'].includes(t)) useNav.getState().tab(t as any) }
 // PWA: офлайн-кэш, только когда приложение раздаётся с настоящего сайта
-if ('serviceWorker' in navigator && location.protocol === 'https:' && !isNative()) {
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && !isNative()) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}) })
 }
 

@@ -110,8 +110,10 @@ interface State extends DB {
   resetDemo: () => void
 }
 
+// с подключённой базой демо-история (≈1800 броней за год) не нужна — экономим ~300 мс на старте
+const LIVE_DB = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
 function fresh(): DB & { seededAt: number } {
-  const d = buildAll()
+  const d = buildAll({ history: !LIVE_DB })
   return { ...d, audit: [], seededAt: Date.now() }
 }
 
