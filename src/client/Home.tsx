@@ -108,7 +108,7 @@ export function Home() {
       {seen.length > 0 && (
         <section>
           <SectionTitle>Вы смотрели</SectionTitle>
-          <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 snap-x pb-1">
+          <div className="wide-row flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 snap-x pb-1">
             {seen.map(p => <div key={p.id} className="snap-start shrink-0 w-[168px] desk:w-[210px] flex"><ProductCard p={p} /></div>)}
           </div>
         </section>
@@ -117,7 +117,7 @@ export function Home() {
       {/* Новинки */}
       <section>
         <SectionTitle action={<button onClick={() => tab('catalog', { sort: 'new' })} className="text-sm text-muted hover:text-fg font-medium flex items-center gap-1 transition-colors">Все <ArrowRight className="size-4" /></button>}>Новинки</SectionTitle>
-        <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 snap-x pb-1">
+        <div className="wide-row flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 snap-x pb-1">
           {fresh.map(p => <div key={p.id} className="snap-start shrink-0 w-[168px] desk:w-[210px] flex"><ProductCard p={p} /></div>)}
         </div>
       </section>
@@ -140,7 +140,7 @@ export function Home() {
       {/* Популярное */}
       <section>
         <SectionTitle>Чаще всего берут</SectionTitle>
-        <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 snap-x pb-1">
+        <div className="wide-row flex gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 snap-x pb-1">
           {popular.map(p => <div key={p.id} className="snap-start shrink-0 w-[168px] desk:w-[210px] flex"><ProductCard p={p} /></div>)}
         </div>
       </section>

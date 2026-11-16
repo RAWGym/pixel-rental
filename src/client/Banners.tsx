@@ -56,11 +56,11 @@ export function Banners() {
   const release = () => { touching.current = false; lastUser.current = Date.now() }
 
   return (
-    <section aria-roledescription="carousel" aria-label="Акции" className="relative -mb-3 w-full max-w-[657px] mx-auto">
+    <section aria-roledescription="carousel" aria-label="Акции" className="relative -mb-3 w-full max-w-[657px] desk:max-w-none mx-auto">
       <div ref={ref} onTouchStart={hold} onTouchEnd={release} onTouchCancel={release} onPointerDown={hold} onPointerUp={release}
         className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none rounded-2xl bg-surface overscroll-x-contain">
         {BANNERS.map((b, i) => (
-          <div key={b.src} className="snap-center snap-always shrink-0 w-full aspect-[2.19/1] max-h-[300px]" aria-roledescription="slide" aria-label={`${i + 1} из ${BANNERS.length}`}>
+          <div key={b.src} className="snap-center snap-always shrink-0 w-full aspect-[2.19/1] max-h-[300px] desk:max-h-none desk:aspect-[3/1]" aria-roledescription="slide" aria-label={`${i + 1} из ${BANNERS.length}`}>
             <img src={b.src} alt={b.alt} draggable={false} decoding="async" loading={i === 0 ? 'eager' : 'lazy'} {...(i === 0 ? { fetchPriority: 'high' as const } : {})} className="size-full object-cover" />
           </div>
         ))}

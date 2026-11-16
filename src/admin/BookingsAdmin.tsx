@@ -19,6 +19,8 @@ const SRC: Record<Source, string> = { app: 'Приложение', phone: 'Зв�
 const PAY: Record<PaymentMethod, string> = { kaspi: 'Kaspi', card: 'Карта', cash: 'Наличные', invoice: 'Счёт' }
 type Filter = 'all' | BookingStatus | 'overdue' | 'today'
 
+const NUM = new Set(["Сумма"])
+
 export function BookingsAdmin() {
   const { bookings, customers, staffId, staff } = useStore()
   const can = useStore(s => s.can)
@@ -52,18 +54,18 @@ export function BookingsAdmin() {
 
       <div className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm min-w-[760px]">
-          <thead><tr className="text-left text-xs text-muted border-b border-line">{['Бронь', 'Клиент', 'Период', 'Состав', 'Статус', 'Оплата', 'Сумма'].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+          <thead><tr className="text-left text-xs text-muted border-b border-line">{['Бронь', 'Клиент', 'Период', 'Состав', 'Статус', 'Оплата', 'Сумма'].map(h => <th key={h} className={cx('px-4 py-3 font-medium', NUM.has(h) && 'num')}>{h}</th>)}</tr></thead>
           <tbody>
             {list.slice(0, 120).map((b, i) => { const c = cust(b.customerId); const od = b.status === 'issued' && b.end < now; return (
-              <motion.tr key={b.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i, 20) * 0.01 }} onClick={() => setOpen(b.id)} className="border-b border-line/60 last:border-0 hover:bg-surface-2 cursor-pointer">
+              <tr key={b.id} onClick={() => setOpen(b.id)} className="border-b border-line/60 last:border-0 hover:bg-surface-2 cursor-pointer">
                 <td className="px-4 py-3"><div className="tnum font-semibold">{b.code}</div><div className="text-xs text-faint">{b.city === 'almaty' ? 'Алматы' : 'Астана'} · {SRC[b.source]}</div></td>
                 <td className="px-4 py-3"><div className="font-medium flex items-center gap-1.5">{c?.name}{c?.blacklisted && <Badge tone="bad">ЧС</Badge>}</div><div className="text-xs text-muted tnum">{c?.phone}</div></td>
                 <td className="px-4 py-3 whitespace-nowrap"><div>{dWithTime(b.start)}</div><div className={cx('text-xs', od ? 'text-bad font-semibold' : 'text-muted')}>до {dWithTime(b.end)}</div></td>
                 <td className="px-4 py-3 text-muted">{b.items.reduce((s, i) => s + i.qty, 0)} поз. · {daysWord(b.days)}</td>
                 <td className="px-4 py-3"><div className="flex flex-wrap gap-1">{od ? <Badge tone="bad">Просрочена</Badge> : <Badge tone={STATUS_ADMIN[b.status].tone}>{STATUS_ADMIN[b.status].label}</Badge>}{b.awaitingVerification && <Badge tone="warn">Ждёт верификации</Badge>}</div></td>
                 <td className="px-4 py-3"><span className={cx('text-xs font-semibold', b.paymentStatus === 'paid' ? 'text-ok' : b.paymentStatus === 'partial' ? 'text-warn' : 'text-muted')}>{b.paymentStatus === 'paid' ? 'Оплачено' : b.paymentStatus === 'partial' ? 'Частично' : 'Нет'}</span><div className="text-xs text-faint">{PAY[b.paymentMethod]}</div></td>
-                <td className="px-4 py-3 tnum text-right whitespace-nowrap">{money(b.total)}</td>
-              </motion.tr>
+                <td className="num">{money(b.total)}</td>
+              </tr>
             ) })}
           </tbody>
         </table>

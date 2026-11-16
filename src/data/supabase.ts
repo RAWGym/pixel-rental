@@ -327,14 +327,21 @@ function startRealtime() {
   const c = client()
   const upsert = <T extends { id: string }>(key: 'bookings' | 'leads' | 'customers', item: T) =>
     useStore.setState(s => ({ [key]: [item, ...(s[key] as any[]).filter(x => x.id !== item.id)] } as any))
+  // удалённые в базе записи исчезают и из админки
+  const remove = (key: 'bookings' | 'leads' | 'customers', id?: string) => { if (id) useStore.setState(s => ({ [key]: (s[key] as any[]).filter(x => x.id !== id) } as any)) }
   channel = c.channel('px-admin')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, async p => {
+      if (p.eventType === 'DELETE') return remove('bookings', (p.old as any)?.id)
       const id = (p.new as any)?.id; if (!id) return
       const { data } = await c.from('bookings').select(BOOKING_SELECT).eq('id', id).maybeSingle()
       if (data) upsert('bookings', toBooking(data))
     })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, p => { if ((p.new as any)?.id) upsert('leads', toLead(p.new)) })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, p => { if ((p.new as any)?.id) upsert('customers', toCustomer(p.new)) })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, p => { if (p.eventType === 'DELETE') remove('leads', (p.old as any)?.id); else if ((p.new as any)?.id) upsert('leads', toLead(p.new)) })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, p => { if (p.eventType === 'DELETE') remove('customers', (p.old as any)?.id); else if ((p.new as any)?.id) upsert('customers', toCustomer(p.new)) })
     .subscribe()
+  // вернулись на вкладку (или появилась сеть) — полная сверка со списком в базе
+  const resync = () => { if (document.visibilityState === 'visible') hydrate().catch(() => {}) }
+  document.addEventListener('visibilitychange', resync)
+  addEventListener('online', resync)
 }
 function stopRealtime() { if (channel) { client().removeChannel(channel); channel = null } }

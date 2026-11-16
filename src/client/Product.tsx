@@ -171,7 +171,7 @@ export function ProductScreen() {
         </div>
       </div>
 
-      <div className="grid desk:grid-cols-[minmax(0,1fr)_minmax(0,440px)] gap-6 desk:gap-12 items-start">
+      <div className="grid desk:grid-cols-[minmax(0,1fr)_minmax(0,440px)] wide:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-6 desk:gap-12 items-start">
         <div className="desk:sticky desk:top-[76px] flex flex-col gap-6">
           <Gallery p={p} />
         </div>

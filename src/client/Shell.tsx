@@ -37,7 +37,7 @@ function SiteFooter() {
   const go = useNav(s => s.go)
   return (
     <footer className="hidden desk:block mt-10 bg-surface">
-      <div className="max-w-[1200px] mx-auto gutter py-10 grid grid-cols-4 gap-8 text-sm">
+      <div className="site-wrap py-10 grid grid-cols-4 gap-8 text-sm">
         <div className="flex flex-col gap-3"><Logo className="h-9 w-auto self-start" /><p className="text-muted">Прокат фото- и видеотехники в Алматы и Астане.</p></div>
         {(['almaty', 'astana'] as const).map(c => (
           <div key={c} className="flex flex-col gap-1.5">
@@ -101,7 +101,7 @@ const Layer = memo(function Layer({ r, cls }: { r: Route; cls: string }) {
   const S = SCREENS[r.name]
   return (
     <div className={cx('layer', cls)}>
-      <div className="max-w-[1200px] mx-auto gutter pt-5 pb-[calc(104px+env(safe-area-inset-bottom,0px))] desk:pb-10">
+      <div className="site-wrap pt-5 pb-[calc(104px+env(safe-area-inset-bottom,0px))] desk:pb-10">
         <RouteCtx.Provider value={r}><S /></RouteCtx.Provider>
       </div>
       <SiteFooter />
@@ -165,7 +165,7 @@ export function ClientApp() {
     <div className="min-h-dvh">
       <AnimatePresence>{splash && <Splash done={() => { setSplash(false); try { sessionStorage.setItem('px-splash', '1') } catch { /* noop */ } }} />}</AnimatePresence>
       <header className="sticky z-50 bg-bg border-b border-line/50" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
-        <div className="max-w-[1200px] mx-auto gutter h-14 flex items-center gap-3">
+        <div className="site-wrap h-14 flex items-center gap-3">
           <button onClick={() => tab('home')} aria-label="На главную" className="shrink-0"><Logo className="h-7 w-auto" sub={false} /></button>
           <button onClick={() => { setCity(city === 'almaty' ? 'astana' : 'almaty'); haptic() }} className="ml-1 h-8 pl-3 pr-2 rounded-full bg-surface-2 text-sm font-medium flex items-center gap-1 text-fg/90 hover:bg-surface-3 transition-colors">
             <AnimatePresence mode="wait" initial={false}><motion.span key={city} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.15 }}>{city === 'almaty' ? 'Алматы' : 'Астана'}</motion.span></AnimatePresence>
@@ -189,7 +189,7 @@ export function ClientApp() {
         </div>
       </header>
 
-      <main className="max-w-[1200px] mx-auto gutter pt-5 pb-24 desk:pb-10">
+      <main className="site-wrap pt-5 pb-24 desk:pb-10">
         {mounted.map(r => <TabRoot key={r.key} r={r} on={r.name === root.name} />)}
       </main>
       <SiteFooter />

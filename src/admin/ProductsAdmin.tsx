@@ -12,6 +12,8 @@ import { uid } from '../lib/rng'
 
 const COND: Record<UnitCondition, string> = { new: 'Новое', good: 'Хорошее', worn: 'Есть износ', repair: 'В ремонте' }
 
+const NUM = new Set(["Цена/сут", "Залог", "Алматы", "Астана"])
+
 export function ProductsAdmin() {
   const { products, units, bookings } = useStore()
   const can = useStore(s => s.can)
@@ -35,7 +37,7 @@ export function ProductsAdmin() {
       </div>
       <div className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm min-w-[820px]">
-          <thead><tr className="text-left text-xs text-muted border-b border-line">{['Товар', 'Категория', 'Цена/сут', 'Залог', 'Алматы', 'Астана', 'Сейчас', ''].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+          <thead><tr className="text-left text-xs text-muted border-b border-line">{['Товар', 'Категория', 'Цена/сут', 'Залог', 'Алматы', 'Астана', 'Сейчас', ''].map(h => <th key={h} className={cx('px-4 py-3 font-medium', NUM.has(h) && 'num')}>{h}</th>)}</tr></thead>
           <tbody>
             {list.map(p => {
               const us = units.filter(u => u.productId === p.id)
@@ -45,10 +47,10 @@ export function ProductsAdmin() {
                 <tr key={p.id} onClick={() => setEdit(p)} className={cx('border-b border-line/60 last:border-0 hover:bg-surface-2 cursor-pointer', p.hidden && 'opacity-50')}>
                   <td className="px-4 py-2.5"><div className="flex items-center gap-3"><ProductArt p={p} size="sm" className="size-10 rounded-lg shrink-0" /><div className="min-w-0"><div className="font-medium truncate max-w-[280px] flex items-center gap-1.5">{p.name}{p.isNew && <Badge tone="accent" className="h-5 tnum">NEW</Badge>}</div><div className="text-xs text-muted">{p.brand} · {p.kind}</div></div></div></td>
                   <td className="px-4 py-2.5 text-muted">{catName(p.category)}</td>
-                  <td className="px-4 py-2.5 tnum">{money(p.price)}</td>
-                  <td className="px-4 py-2.5 tnum text-muted">{p.deposit ? money(p.deposit) : '—'}</td>
-                  <td className="px-4 py-2.5 tnum">{a.length}</td>
-                  <td className="px-4 py-2.5 tnum">{s.length}</td>
+                  <td className="num">{money(p.price)}</td>
+                  <td className="num text-muted">{p.deposit ? money(p.deposit) : '—'}</td>
+                  <td className="num">{a.length}</td>
+                  <td className="num">{s.length}</td>
                   <td className="px-4 py-2.5"><div className="flex gap-1">{out > 0 && <Badge tone="accent">{out} на руках</Badge>}{rep > 0 && <Badge tone="warn"><Wrench className="size-3" />{rep}</Badge>}{!out && !rep && <span className="text-xs text-ok">всё на складе</span>}</div></td>
                   <td className="px-4 py-2.5">{p.hidden ? <EyeOff className="size-4 text-muted" /> : <Eye className="size-4 text-faint" />}</td>
                 </tr>

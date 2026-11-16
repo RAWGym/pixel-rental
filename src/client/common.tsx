@@ -40,7 +40,7 @@ export function AvailLine({ productId }: { productId: string }) {
   return <div className="flex items-center gap-1.5 text-xs text-muted whitespace-nowrap"><span className={cx('size-1.5 rounded-full shrink-0', tone)} /><span className="truncate">{text}</span></div>
 }
 
-export const ProductCard = memo(function ProductCard({ p }: { p: Product; index?: number }) {
+export const ProductCard = memo(function ProductCard({ p, lazy }: { p: Product; index?: number; lazy?: boolean }) {
   const go = useNav(s => s.go)
   const add = useStore(s => s.addToCart), setQty = useStore(s => s.setQty)
   const qty = useCartQty(p.id)
@@ -49,7 +49,8 @@ export const ProductCard = memo(function ProductCard({ p }: { p: Product; index?
   const open = () => go('product', { id: p.id })
   // только главное: фото, название, цена за сутки, наличие
   return (
-    <div className="cv-card group flex flex-col w-full min-w-0 bg-surface rounded-2xl overflow-hidden">
+    // content-visibility — только в длинной сетке каталога: в горизонтальных рядах некоторые браузеры не дорисовывают карточки
+    <div className={cx(lazy && 'cv-card', 'group flex flex-col w-full min-w-0 bg-surface rounded-2xl overflow-hidden')}>
       <button onClick={open} className="text-left" aria-label={p.name}>
         <ProductArt p={p} className="aspect-square w-full" />
       </button>

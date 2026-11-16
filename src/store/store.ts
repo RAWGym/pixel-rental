@@ -297,8 +297,13 @@ export const useStore = create<State>()(persist((set, get) => ({
   name: 'pixel-rental-v1',
   storage: debouncedStorage<State>(),
   // v2: в демо-данных появилась история за год — старые сохранения пересоздаём
-  version: 2,
+  // v3: с подключённой базой серверные данные больше не хранятся в браузере — старый кэш сбрасываем
+  version: 3,
   migrate: () => ({}) as any,
+  // источник правды для броней, клиентов, заявок, товаров и сотрудников — база; в браузере только личное
+  partialize: (s: State) => (LIVE_DB
+    ? { city: s.city, range: s.range, cart: s.cart, favorites: s.favorites, promo: s.promo, recent: s.recent, viewed: s.viewed, compare: s.compare, seededAt: s.seededAt }
+    : s) as any,
   onRehydrateStorage: () => state => {
     // демо-данные «стареют»: пересоздаём, если прошло больше 3 дней
     if (state && Date.now() - state.seededAt > 3 * DAY) state.resetDemo()

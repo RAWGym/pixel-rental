@@ -76,6 +76,8 @@ export function AdminApp() {
   const [menu, setMenu] = useState(false)
   const [cmd, setCmd] = useState(false)
   const { theme, toggle: toggleTheme } = useAdmTheme()
+  // полоса прокрутки не сдвигает центровку при переходе между короткими и длинными разделами
+  useEffect(() => { const el = document.documentElement; const prev = el.style.scrollbarGutter; el.style.scrollbarGutter = 'stable'; return () => { el.style.scrollbarGutter = prev } }, [])
   // ⌘K / Ctrl+K — поиск по всему
   useEffect(() => {
     const f = (e: KeyboardEvent) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setCmd(c => !c) } }
@@ -140,8 +142,8 @@ export function AdminApp() {
   return (
     <div className="adm" data-theme={theme}>
       {/* верхняя панель-«пилюля»: логотип, разделы, поиск, уведомления, профиль */}
-      <header className="sticky z-40 gutter pt-3 enter-top" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
-        <div className="glass-bar max-w-[1400px] mx-auto h-16 px-2.5 flex items-center gap-2 rounded-[22px]">
+      <header className="sticky z-40 adm-shell pt-3 enter-top" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+        <div className="glass-bar adm-wrap h-16 px-2.5 flex items-center gap-2 rounded-[22px]">
           <div className="flex items-center gap-2.5 pl-1 pr-2 min-w-0">
             <span className="hidden sm:flex items-center gap-3 min-w-0">
               <Logo className="h-9 w-auto shrink-0" />
@@ -194,8 +196,9 @@ export function AdminApp() {
         </>
       )}
 
-      <main className="gutter pt-4 pb-32 lg:pb-10 enter-main">
-        <div className="xl:pl-[76px]"><div className="glass-panel max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
+      {/* шапка и раздел — в одном контейнере: одинаковые края на любой ширине */}
+      <main className="adm-shell pt-4 pb-32 lg:pb-10 enter-main">
+        <div><div className="glass-panel adm-wrap p-4 sm:p-6 lg:p-8">
           <div key={page} className="fade-in"><Page /></div>
         </div></div>
       </main>

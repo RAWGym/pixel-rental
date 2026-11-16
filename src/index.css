@@ -25,13 +25,13 @@
   --font-mono: var(--font-sans);
 
   /* одна шкала: 12 / 13 / 15 / 17 / 20 / 28 */
-  --text-xs: 12px; --text-xs--line-height: 16px;
-  --text-sm: 13px; --text-sm--line-height: 18px;
-  --text-base: 15px; --text-base--line-height: 22px;
-  --text-lg: 17px; --text-lg--line-height: 24px;
-  --text-xl: 20px; --text-xl--line-height: 26px;
-  --text-2xl: 28px; --text-2xl--line-height: 34px;
-  --text-3xl: 28px; --text-3xl--line-height: 34px;
+  --text-xs: 0.75rem; --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem; --text-sm--line-height: 1.125rem;
+  --text-base: 0.9375rem; --text-base--line-height: 1.375rem;
+  --text-lg: 1.0625rem; --text-lg--line-height: 1.5rem;
+  --text-xl: 1.25rem; --text-xl--line-height: 1.625rem;
+  --text-2xl: 1.75rem; --text-2xl--line-height: 2.125rem;
+  --text-3xl: 1.75rem; --text-3xl--line-height: 2.125rem;
 
   /* радиусы: 12 контролы, 16 карточки, 20 шторки */
   --radius-xl: 12px;
@@ -39,10 +39,13 @@
   --radius-3xl: 20px;
 
   /* сетки: 2 колонки <600, 3 от 600, 4 от 900 */
-  --breakpoint-sm: 600px;
-  --breakpoint-lg: 900px;
+  --breakpoint-sm: 37.5rem;
+  --breakpoint-lg: 56.25rem;
   /* сайт: верхнее меню, фильтры слева, футер */
-  --breakpoint-desk: 1024px;
+  --breakpoint-desk: 64rem;
+  /* широкие мониторы: крупнее и больше колонок */
+  --breakpoint-wide: 100rem;
+  --breakpoint-ultra: 118.75rem;
 
   --font-weight-bold: 600;
   --font-weight-extrabold: 600;
@@ -55,7 +58,7 @@
 :root { color-scheme: dark; }
 html, body { background: var(--color-bg); color: var(--color-fg); overflow-x: clip; max-width: 100%; }
 #root { min-height: 100dvh; overflow-x: clip; }
-body { font-family: var(--font-sans); font-size: 15px; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+body { font-family: var(--font-sans); font-size: 0.9375rem; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--color-bg); }
 h1, h2, h3 { text-wrap: balance; letter-spacing: -0.01em; }
 .font-display { letter-spacing: -0.01em; }
@@ -97,7 +100,7 @@ input, textarea, select { font: inherit; color: inherit; }
 /* вкладки живут в памяти; при показе — короткое проявление (анимация перезапускается при display:none → block) */
 .tab-root { animation: px-fade 120ms var(--ease-ui) both; }
 /* экраны поверх вкладок: выезжают справа и уезжают обратно */
-.layer { position: fixed; left: 0; right: 0; bottom: 0; top: calc(56px + env(safe-area-inset-top, 0px)); overflow-y: auto; overflow-x: clip; overscroll-behavior: contain; background: var(--color-bg); z-index: 40; -webkit-overflow-scrolling: touch; }
+.layer { position: fixed; left: 0; right: 0; bottom: 0; top: calc(3.5rem + env(safe-area-inset-top, 0px)); overflow-y: auto; overflow-x: clip; overscroll-behavior: contain; background: var(--color-bg); z-index: 40; -webkit-overflow-scrolling: touch; }
 .layer-in { animation: px-push 240ms var(--ease-ui) both; box-shadow: -12px 0 32px rgba(0,0,0,.35); }
 .layer-out { animation: px-pop 240ms var(--ease-ui) both; pointer-events: none; z-index: 45; box-shadow: -12px 0 32px rgba(0,0,0,.35); }
 .layer-fade { animation: px-fade 160ms var(--ease-ui) both; }
@@ -256,3 +259,33 @@ input, textarea, select { font: inherit; color: inherit; }
   .press.size-8, .press.size-9 { position: relative; }
   .press.size-8::after, .press.size-9::after { content: ""; position: absolute; inset: -6px; }
 }
+
+/* ---------- админка на ПК: общий контейнер и сетка ---------- */
+.adm .adm-shell { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+/* с боковой рейкой (≥1280) — симметричные поля, чтобы шапка и раздел были на одной оси по центру */
+@media (min-width: 1280px) { .adm .adm-shell { padding-left: 88px; padding-right: 88px; } }
+.adm .adm-wrap { width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto; }
+/* таблицы: одинаковые отступы, заголовки на одной линии с содержимым, числа табличными цифрами */
+.adm table { border-collapse: separate; border-spacing: 0; }
+.adm table th, .adm table td { padding: 12px 16px; vertical-align: middle; }
+.adm table th { font-weight: 500; font-size: 12px; color: var(--color-muted); white-space: nowrap; }
+.adm table td.num, .adm table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* поля и селекты одной высоты */
+.adm .field { min-height: 44px; }
+.adm select.field { height: 44px; padding-top: 0; padding-bottom: 0; }
+
+/* ---------- широкие экраны: интерфейс чуть крупнее и на всю ширину ---------- */
+/* Все размеры в rem: на ПК ≥1600 базовый шрифт растёт, и вместе с ним — отступы, кнопки, карточки. Телефоны и обычные ноутбуки без изменений. */
+.site-wrap { width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 1440px) { .site-wrap { max-width: 1320px; padding-left: 32px; padding-right: 32px; } }
+@media (min-width: 1600px) { html { font-size: 17px; } .site-wrap { max-width: 1520px; padding-left: 40px; padding-right: 40px; } }
+@media (min-width: 1900px) { html { font-size: 18px; } .site-wrap { max-width: 1760px; padding-left: 56px; padding-right: 56px; } }
+@media (min-width: 2500px) { html { font-size: 20px; } .site-wrap { max-width: 2200px; padding-left: 64px; padding-right: 64px; } }
+/* ряды «Новинки» / «Чаще всего берут» на широких: сетка без прокрутки, лишнее прячем */
+@media (min-width: 1600px) {
+  .wide-row { display: grid !important; grid-template-columns: repeat(6, minmax(0, 1fr)); overflow: visible !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }
+  .wide-row > * { width: auto !important; }
+  .wide-row > :nth-child(n+7) { display: none !important; }
+}
+@media (min-width: 1900px) { .wide-row { grid-template-columns: repeat(7, minmax(0, 1fr)); } .wide-row > :nth-child(7) { display: flex !important; } }
+@media (min-width: 2500px) { .wide-row { grid-template-columns: repeat(8, minmax(0, 1fr)); } .wide-row > :nth-child(8) { display: flex !important; } }

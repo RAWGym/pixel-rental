@@ -9,6 +9,8 @@ import { api } from '../data/api'
 import { supabaseConfigured, scanUrls } from '../data/supabase'
 import { STATUS_ADMIN } from './BookingsAdmin'
 
+const NUM = new Set(["Броней", "Сумма"])
+
 export function CustomersAdmin() {
   const { customers, bookings } = useStore()
   const [q, setQ] = useState('')
@@ -33,13 +35,13 @@ export function CustomersAdmin() {
       <div className="flex gap-1.5 mb-4">{([['all', 'Все'], ['vip', '5+ броней'], ['new', 'Не проверены'], ['black', 'Чёрный список']] as const).map(([id, l]) => <button key={id} onClick={() => setF(id)} className={cx('h-8 px-3 rounded-full text-sm whitespace-nowrap border', f === id ? 'bg-accent text-accent-ink border-accent font-semibold' : 'border-line hover:border-line-2')}>{l}</button>)}</div>
       <div className="rounded-2xl bg-surface overflow-x-auto">
         <table className="w-full text-sm min-w-[700px]">
-          <thead><tr className="text-left text-xs text-muted border-b border-line">{['Клиент', 'Телефон', 'Броней', 'Сумма', 'Последняя', 'Статус'].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+          <thead><tr className="text-left text-xs text-muted border-b border-line">{['Клиент', 'Телефон', 'Броней', 'Сумма', 'Последняя', 'Статус'].map(h => <th key={h} className={cx('px-4 py-3 font-medium', NUM.has(h) && 'num')}>{h}</th>)}</tr></thead>
           <tbody>{list.map(c => { const s = stats.get(c.id); return (
             <tr key={c.id} onClick={() => setOpen(c.id)} className="border-b border-line/60 last:border-0 hover:bg-surface-2 cursor-pointer">
               <td className="px-4 py-3"><div className="font-medium">{c.name}</div>{c.company && <div className="text-xs text-muted">{c.company}</div>}</td>
               <td className="px-4 py-3 tnum text-muted">{c.phone}</td>
-              <td className="px-4 py-3 tnum">{s?.n ?? 0}</td>
-              <td className="px-4 py-3 tnum">{money(s?.sum ?? 0)}</td>
+              <td className="num">{s?.n ?? 0}</td>
+              <td className="num">{money(s?.sum ?? 0)}</td>
               <td className="px-4 py-3 text-muted">{s?.last ? dShort(s.last) : '—'}</td>
               <td className="px-4 py-3"><div className="flex gap-1">{c.blacklisted ? <Badge tone="bad">ЧС</Badge> : (() => { const v = verificationOf(c); return <Badge tone={v === 'verified' ? 'ok' : v === 'pending' ? 'warn' : v === 'rejected' ? 'bad' : 'muted'}>{VERIFICATION_LABEL[v]}</Badge> })()}{c.tags.filter(t => t !== 'Новый').map(t => <Badge key={t}>{t}</Badge>)}</div></td>
             </tr>) })}</tbody>

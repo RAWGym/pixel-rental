@@ -153,8 +153,8 @@ export function Catalog() {
 
       <div key={cat + sort} className="fade-in">
           {list.length ? (<>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 desk:grid-cols-3 xl:grid-cols-4 gap-3">
-              {list.slice(0, shown).map(p => <ProductCard key={p.id} p={p} />)}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 desk:grid-cols-3 xl:grid-cols-4 wide:grid-cols-5 ultra:grid-cols-6 gap-3">
+              {list.slice(0, shown).map(p => <ProductCard key={p.id} p={p} lazy />)}
             </div>
             {more && <div ref={sentinel} className="h-px" aria-hidden />}
           </>) : (
