@@ -1,5 +1,6 @@
 import { useShop } from '../store/shop'
-import { ShopCartPanel } from './Shop'
+import { lazy, Suspense } from 'react'
+const ShopCartPanel = lazy(() => import('./Shop').then(m => ({ default: m.ShopCartPanel })))
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trash2, ShoppingBag, Tag, ShieldCheck, AlertTriangle, ChevronRight } from 'lucide-react'
@@ -36,7 +37,7 @@ export function CartScreen() {
   return (
     <div className="flex flex-col gap-4">
       <Segmented layoutId="cart-mode" value={mode} onChange={setMode} options={[{ value: 'rent', label: `Аренда${rentN ? ` · ${rentN}` : ''}` }, { value: 'shop', label: `Магазин · ${shopN}` }]} />
-      {mode === 'rent' ? <RentalCart /> : <div className="pb-40 lg:pb-10"><ShopCartPanel embedded /></div>}
+      {mode === 'rent' ? <RentalCart /> : <div className="pb-40 lg:pb-10"><Suspense fallback={null}><ShopCartPanel embedded /></Suspense></div>}
     </div>
   )
 }

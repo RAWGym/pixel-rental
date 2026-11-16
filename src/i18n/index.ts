@@ -6,7 +6,11 @@
  * Админка остаётся на русском (внутри .adm перевод не применяется).
  */
 import { create } from 'zustand'
-import { KK, KK_WA, KK_MONTHS_SHORT, KK_MONTHS_FULL, KK_MONTHS_NOM } from './kk'
+// словарь грузится отдельным файлом и только при выборе KZ
+type Dict = typeof import('./kk')
+let D: Dict | null = null
+let loading: Promise<Dict> | null = null
+export const loadKK = () => (loading ??= import('./kk').then(m => { D = m; TPL = compile(m.KK); TPL_WA = compile(m.KK_WA); return m }))
 
 export type Lang = 'ru' | 'kk'
 const KEY = 'px-lang'
@@ -28,8 +32,8 @@ const compile = (dict: Record<string, string>): Tpl[] => Object.entries(dict).fi
   // в переводе подставляем значения по номерам
   return { re, to: to.replace(/\{(\d)\}/g, (_m, n) => `\u0000${order.indexOf(+n)}\u0000`) }
 })
-const TPL = compile(KK)
-const TPL_WA = compile(KK_WA)
+let TPL: Tpl[] = []
+let TPL_WA: Tpl[] = []
 const RU_SHORT = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
 const RU_FULL = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 const RU_NOM = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
@@ -39,9 +43,9 @@ const WD: Record<string, string> = { Пн: 'Дс', Вт: 'Сс', Ср: 'Ср', �
 function dates(s: string) {
   if (!/\d/.test(s) && !RU_NOM.some(m => s.includes(m))) return s
   return s
-    .replace(/(\d{1,2})\s(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)(?![а-я])/g, (_m, d, mo) => `${d} ${KK_MONTHS_FULL[RU_FULL.indexOf(mo)]}`)
-    .replace(/(\d{1,2})\s(янв|фев|мар|апр|мая|июн|июл|авг|сен|окт|ноя|дек)(?![а-я])/g, (_m, d, mo) => `${d} ${KK_MONTHS_SHORT[RU_SHORT.indexOf(mo)]}`)
-    .replace(/(Январь|Февраль|Март|Апрель|Май|Июнь|Июль|Август|Сентябрь|Октябрь|Ноябрь|Декабрь)(?![а-я])/g, m => KK_MONTHS_NOM[RU_NOM.indexOf(m)])
+    .replace(/(\d{1,2})\s(января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)(?![а-я])/g, (_m, d, mo) => `${d} ${D!.KK_MONTHS_FULL[RU_FULL.indexOf(mo)]}`)
+    .replace(/(\d{1,2})\s(янв|фев|мар|апр|мая|июн|июл|авг|сен|окт|ноя|дек)(?![а-я])/g, (_m, d, mo) => `${d} ${D!.KK_MONTHS_SHORT[RU_SHORT.indexOf(mo)]}`)
+    .replace(/(Январь|Февраль|Март|Апрель|Май|Июнь|Июль|Август|Сентябрь|Октябрь|Ноябрь|Декабрь)(?![а-я])/g, m => D!.KK_MONTHS_NOM[RU_NOM.indexOf(m)])
     .replace(/(^|[\s(])(Пн|Вт|Ср|Чт|Пт|Сб|Вс)(?=,|\s|$)/g, (_m, a, w) => a + WD[w])
 }
 
@@ -60,13 +64,13 @@ function lookup(text: string, dict: Record<string, string>, tpl: Tpl[]): string 
 }
 /** перевод строки (в коде: сообщения, тексты вне DOM) */
 export function tr(s: string): string {
-  if (useLang.getState().lang === 'ru') return s
-  return lookup(s, KK, TPL) ?? s
+  if (useLang.getState().lang === 'ru' || !D) return s
+  return lookup(s, D.KK, TPL) ?? s
 }
 /** сообщение для WhatsApp: построчно */
 export function trMessage(s: string): string {
-  if (useLang.getState().lang === 'ru') return s
-  return s.split('\n').map(line => lookup(line, KK_WA, TPL_WA) ?? lookup(line, KK, TPL) ?? line).join('\n')
+  if (useLang.getState().lang === 'ru' || !D) return s
+  return s.split('\n').map(line => lookup(line, D!.KK_WA, TPL_WA) ?? lookup(line, D!.KK, TPL) ?? line).join('\n')
 }
 
 /* ---------- перевод на странице ---------- */
@@ -80,8 +84,8 @@ function doText(n: Text, lang: Lang) {
   // React поменял текст сам — это новый русский оригинал
   const ru = rec && n.data === rec.out ? rec.ru : n.data
   if (lang === 'ru') { if (rec) { textOrig.delete(n); if (n.data !== ru) n.data = ru } return }
-  if (skip(n.parentElement)) return
-  const out = lookup(ru, KK, TPL)
+  if (skip(n.parentElement) || !D) return
+  const out = lookup(ru, D.KK, TPL)
   if (out === null) { if (rec) textOrig.delete(n); return }
   textOrig.set(n, { ru, out })
   if (n.data !== out) n.data = out
@@ -93,8 +97,8 @@ function doAttrs(el: Element, lang: Lang) {
     const rec = recs?.[a]
     const ru = rec && v === rec.out ? rec.ru : v
     if (lang === 'ru') { if (rec) { delete recs![a]; if (v !== ru) el.setAttribute(a, ru) } continue }
-    if (skip(el)) continue
-    const out = lookup(ru, KK, TPL)
+    if (skip(el) || !D) continue
+    const out = lookup(ru, D.KK, TPL)
     if (out === null) continue
     if (!recs) attrOrig.set(el, (recs = {}))
     recs[a] = { ru, out }
@@ -113,7 +117,9 @@ function walk(root: Node, lang: Lang) {
 
 let observer: MutationObserver | null = null
 export function initI18n() {
-  const apply = (lang: Lang) => {
+  const apply = async (lang: Lang) => {
+    // KZ при старте: не показываем русский текст, пока грузится словарь (не дольше 0,8 с)
+    if (lang === 'kk' && !D) { const h = document.documentElement; h.style.visibility = 'hidden'; const t = setTimeout(() => { h.style.visibility = '' }, 800); await loadKK().finally(() => { clearTimeout(t); h.style.visibility = '' }) }
     document.documentElement.lang = lang === 'kk' ? 'kk' : 'ru'
     observer?.disconnect()
     walk(document.body, lang)

@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { lazy, memo, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useAnimationControls } from 'framer-motion'
 import { Home as HomeI, LayoutGrid, ShoppingBag, CalendarCheck, User, Search, ChevronDown, Heart, Store } from 'lucide-react'
 import { useStore } from '../store/store'
@@ -16,7 +16,9 @@ import { ProfileScreen, Favorites, KitBuilder, Contacts, Terms } from './Profile
 import { AuthScreen, VerifyScreen } from './Auth'
 import { SceneScreen, CompareScreen, CompareBar, Onboarding } from './Extras'
 import { PullToRefresh, UpdateBanner } from './Refresh'
-import { ShopScreen, ShopProductScreen, ShopCartScreen, ShopDone, ShopOrders } from './Shop'
+// магазин: отдельный файл, грузится при первом входе
+const shopScreen = (k: 'ShopScreen' | 'ShopProductScreen' | 'ShopCartScreen' | 'ShopDone' | 'ShopOrders') => { const L = lazy(() => import('./Shop').then(m => ({ default: m[k] }))); return () => <Suspense fallback={null}><L /></Suspense> }
+const ShopScreen = shopScreen('ShopScreen'), ShopProductScreen = shopScreen('ShopProductScreen'), ShopCartScreen = shopScreen('ShopCartScreen'), ShopDone = shopScreen('ShopDone'), ShopOrders = shopScreen('ShopOrders')
 import { useShop } from '../store/shop'
 import { useLang } from '../i18n'
 
