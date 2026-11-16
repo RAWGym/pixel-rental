@@ -1,0 +1,258 @@
+@import "tailwindcss";
+
+/* Pixel Rental — спокойная тёмная студия. Оранжевый из логотипа — только для главного действия и мелких акцентов */
+@theme {
+  --color-bg: #0E0D0C;
+  --color-surface: #151413;
+  --color-surface-2: #1C1A18;
+  --color-surface-3: #252220;
+  --color-line: #2A2623;
+  --color-line-2: #38332E;
+  --color-fg: #F2EEE9;
+  --color-muted: #9A928A;
+  --color-faint: #6B635C;
+  --color-accent: #F5923A;
+  --color-accent-2: #F8A75E;
+  --color-accent-ink: #1C0F02;
+  --color-ok: #7CCB95;
+  --color-warn: #E3B860;
+  --color-bad: #EE7466;
+  --color-info: #82B4EA;
+
+  /* только системные шрифты: SF на iOS, Roboto на Android, Segoe на Windows */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Roboto, "Segoe UI", system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: var(--font-sans);
+
+  /* одна шкала: 12 / 13 / 15 / 17 / 20 / 28 */
+  --text-xs: 12px; --text-xs--line-height: 16px;
+  --text-sm: 13px; --text-sm--line-height: 18px;
+  --text-base: 15px; --text-base--line-height: 22px;
+  --text-lg: 17px; --text-lg--line-height: 24px;
+  --text-xl: 20px; --text-xl--line-height: 26px;
+  --text-2xl: 28px; --text-2xl--line-height: 34px;
+  --text-3xl: 28px; --text-3xl--line-height: 34px;
+
+  /* радиусы: 12 контролы, 16 карточки, 20 шторки */
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+
+  /* сетки: 2 колонки <600, 3 от 600, 4 от 900 */
+  --breakpoint-sm: 600px;
+  --breakpoint-lg: 900px;
+  /* сайт: верхнее меню, фильтры слева, футер */
+  --breakpoint-desk: 1024px;
+
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 600;
+  --ease-ui: cubic-bezier(.2,.8,.2,1);
+
+  --ease-snap: cubic-bezier(.2,.9,.25,1);
+  --ease-out: cubic-bezier(.22,1,.36,1);
+}
+
+:root { color-scheme: dark; }
+html, body { background: var(--color-bg); color: var(--color-fg); overflow-x: clip; max-width: 100%; }
+#root { min-height: 100dvh; overflow-x: clip; }
+body { font-family: var(--font-sans); font-size: 15px; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--color-bg); }
+h1, h2, h3 { text-wrap: balance; letter-spacing: -0.01em; }
+.font-display { letter-spacing: -0.01em; }
+.font-mono { font-variant-numeric: tabular-nums; letter-spacing: 0; }
+img, svg, video { max-width: 100%; }
+.tnum { font-variant-numeric: tabular-nums; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* пиксельные «ступенчатые» углы */
+.px-corners { border-radius: 12px; }
+.px-corners-lg { border-radius: 18px; }
+.dot-grid { }
+.scrollbar-none { scrollbar-width: none; } .scrollbar-none::-webkit-scrollbar { display: none; }
+.label { font-size: 13px; color: var(--color-muted); font-weight: 500; }
+input, textarea, select { font: inherit; color: inherit; }
+@layer components {
+.field { width: 100%; min-width: 0; background: var(--color-surface-2); border: 1px solid transparent; border-radius: 12px; padding: 12px 14px; outline: none; font-size: 16px; transition: border-color .15s; }
+.field:focus { border-color: var(--color-line-2); background: var(--color-surface-3); }
+.field::placeholder { color: var(--color-faint); }
+}
+:focus-visible { outline: 2px solid color-mix(in oklab, var(--color-accent) 70%, transparent); outline-offset: 2px; }
+
+
+/* внутри нативной обёртки: без выделения текста и системного меню по долгому тапу */
+.native body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.native input, .native textarea, .native .select-all { -webkit-user-select: text; user-select: text; }
+
+/* фото товара: мягкая подложка-«студия» под прозрачные PNG */
+.photo-stage { background: radial-gradient(120% 90% at 50% 30%, #23201D 0%, #191715 55%, #151413 100%); }
+.photo-img { opacity: 0; transition: opacity .24s var(--ease-ui), transform .26s var(--ease-ui); }
+.photo-img[data-loaded="1"] { opacity: 1; }
+@media (hover: hover) { .group:hover .photo-img[data-loaded="1"] { transform: scale(1.03); } }
+
+/* ---------- движение: только transform и opacity ---------- */
+@keyframes px-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes px-push { from { transform: translate3d(100%,0,0) } to { transform: none } }
+@keyframes px-pop { from { transform: none } to { transform: translate3d(100%,0,0) } }
+.fade-in { animation: px-fade 160ms var(--ease-ui) both; }
+/* вкладки живут в памяти; при показе — короткое проявление (анимация перезапускается при display:none → block) */
+.tab-root { animation: px-fade 120ms var(--ease-ui) both; }
+/* экраны поверх вкладок: выезжают справа и уезжают обратно */
+.layer { position: fixed; left: 0; right: 0; bottom: 0; top: calc(56px + env(safe-area-inset-top, 0px)); overflow-y: auto; overflow-x: clip; overscroll-behavior: contain; background: var(--color-bg); z-index: 40; -webkit-overflow-scrolling: touch; }
+.layer-in { animation: px-push 240ms var(--ease-ui) both; box-shadow: -12px 0 32px rgba(0,0,0,.35); }
+.layer-out { animation: px-pop 240ms var(--ease-ui) both; pointer-events: none; z-index: 45; box-shadow: -12px 0 32px rgba(0,0,0,.35); }
+.layer-fade { animation: px-fade 160ms var(--ease-ui) both; }
+/* отклик на нажатие */
+.press { transition: transform 160ms var(--ease-ui), background-color 160ms, color 160ms, opacity 160ms; }
+.press:active { transform: scale(.97); }
+/* длинные списки карточек: браузер не рисует то, что за экраном */
+.cv-card { content-visibility: auto; contain-intrinsic-size: auto 300px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* дети сеток и флексов не распирают контейнер длинным текстом */
+.grid > * { min-width: 0; }
+.tab-hidden { content-visibility: hidden; height: 0; overflow: hidden; }
+/* на сайте экраны не выезжают, а проявляются; футер внутри слоя */
+@media (min-width: 1024px) {
+  .layer-in { animation: px-fade 160ms var(--ease-ui) both; box-shadow: none; }
+  .layer-out { animation: none; display: none; }
+}
+
+/* ===================== Админка: «тёплое стекло» в цветах Pixel (тёмная и светлая темы) ===================== */
+.adm {
+  /* тёмная (по умолчанию) */
+  --ink: #f7f0e6; --ink-2: #e6dacb; --muted-ink: #cdbfab;
+  --sheet: rgba(30, 22, 16, 0.86);
+  --card: rgba(255, 240, 226, 0.06);
+  --card-2: rgba(255, 238, 218, 0.07);
+  --card-3: rgba(255, 238, 218, 0.12);
+  --line-c: rgba(255, 236, 212, 0.10);
+  --line-c2: rgba(255, 236, 212, 0.18);
+  --glass-hi: rgba(255, 246, 236, 0.09);
+  --glass-top: rgba(255, 248, 240, 0.30);
+  --soft: rgba(255, 240, 226, 0.05);
+  --rim: inset 0 0 0 1px rgba(255, 240, 224, 0.09);
+  --thumb: #f7f0e6; --on-thumb: #1c1410;
+  --pop: #241a12; --pop-2: #2c2118; --pop-3: #372a1f;
+  --scene-1: rgba(245, 146, 58, 0.22); --scene-2: rgba(140, 70, 24, 0.30); --scene-3: rgba(245, 146, 58, 0.08); --scene-bg: #130f0c;
+
+  --color-bg: var(--scene-bg);
+  --color-surface: var(--card);
+  --color-surface-2: var(--card-2);
+  --color-surface-3: var(--card-3);
+  --color-line: var(--line-c);
+  --color-line-2: var(--line-c2);
+  --color-fg: var(--ink);
+  --color-muted: color-mix(in oklab, var(--muted-ink) 88%, transparent);
+  --color-faint: color-mix(in oklab, var(--muted-ink) 58%, transparent);
+  --glass-ring: inset 0 0 0 1px var(--line-c), inset 1px 1px 0 var(--glass-top), 0 1px 2px rgba(0, 0, 0, 0.25), 0 22px 44px -26px rgba(0, 0, 0, 0.7);
+
+  background:
+    radial-gradient(900px 600px at 12% -8%, var(--scene-1), transparent 60%),
+    radial-gradient(800px 700px at 100% 0%, var(--scene-2), transparent 60%),
+    radial-gradient(1000px 800px at 50% 110%, var(--scene-3), transparent 60%),
+    var(--scene-bg);
+  background-attachment: fixed;
+  color: var(--color-fg);
+  min-height: 100dvh;
+  color-scheme: dark;
+}
+/* светлая: тёплый беж, тёмные «пилюли», те же акценты Pixel */
+.adm[data-theme=light] {
+  --ink: #1f1710; --ink-2: #3a2e23; --muted-ink: #5d4f42;
+  --sheet: rgba(253, 248, 241, 0.88);
+  --card: rgba(255, 253, 250, 0.55);
+  --card-2: rgba(255, 250, 243, 0.62);
+  --card-3: rgba(60, 40, 20, 0.08);
+  --line-c: rgba(50, 32, 16, 0.10);
+  --line-c2: rgba(50, 32, 16, 0.18);
+  --glass-hi: rgba(255, 255, 255, 0.55);
+  --glass-top: rgba(255, 255, 255, 0.95);
+  --soft: rgba(60, 40, 20, 0.05);
+  --rim: inset 0 0 0 1px rgba(50, 32, 16, 0.10);
+  --thumb: #241a12; --on-thumb: #fbf6ee;
+  --pop: #fbf6ee; --pop-2: #f3eadd; --pop-3: #e9dccb;
+  --scene-1: rgba(245, 146, 58, 0.30); --scene-2: rgba(255, 230, 200, 0.9); --scene-3: rgba(201, 138, 44, 0.18); --scene-bg: #e9dccb;
+  --color-ok: #1d7346; --color-warn: #8f540a; --color-bad: #ad3b24; --color-info: #255c92;
+  --color-accent: #d9741c; --color-accent-2: #c4651a; --color-accent-ink: #fff8f0;
+  --glass-ring: inset 0 0 0 1px rgba(50, 32, 16, 0.08), inset 1px 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(60, 36, 14, 0.06), 0 18px 40px -26px rgba(60, 36, 14, 0.4);
+  color-scheme: light;
+}
+/* карточки: прозрачный тёплый слой + блик по диагонали + световое кольцо */
+.adm .glass, .adm .rounded-2xl.bg-surface, .adm .rounded-3xl.bg-surface {
+  background: linear-gradient(160deg, var(--glass-hi), transparent 46%), var(--card);
+  box-shadow: var(--glass-ring);
+  border-radius: 20px;
+}
+.adm .glass-bar { background: linear-gradient(165deg, var(--glass-hi), transparent 46%), var(--sheet); box-shadow: var(--glass-ring); }
+.adm .glass-panel { background: linear-gradient(160deg, var(--glass-hi), transparent 40%), color-mix(in oklab, var(--card) 55%, transparent); box-shadow: var(--glass-ring); border-radius: 28px; }
+.adm .soft { background: var(--soft); box-shadow: var(--rim); }
+/* шторки, выпадашки и модалки — непрозрачные */
+.adm [role=dialog], .adm .pop {
+  --color-surface: var(--pop); --color-surface-2: var(--pop-2); --color-surface-3: var(--pop-3);
+}
+.adm [role=dialog] .rounded-2xl.bg-surface, .adm .pop .rounded-2xl.bg-surface { background: var(--pop-2); box-shadow: none; }
+.adm .pill-on { background: var(--thumb); color: var(--on-thumb); }
+.adm .pill-on svg { color: var(--on-thumb); }
+.adm .field { background: var(--card-2); }
+@media (hover: hover) { .adm .lift { transition: transform 300ms var(--ease-k), box-shadow 300ms var(--ease-k); } .adm .lift:hover { transform: translateY(-2px); } }
+
+/* ---------- движение (тайминги шаблона) ---------- */
+.adm { --ease-k: cubic-bezier(.22, 1, .36, 1); --expo: cubic-bezier(.16, 1, .3, 1); --back: cubic-bezier(.34, 1.56, .64, 1); }
+/* верхняя панель «падает» сверху, основная зона поднимается, рейка выезжает слева */
+@keyframes adm-top { from { opacity: 0; transform: translate3d(0, -26px, 0) } to { opacity: 1; transform: none } }
+@keyframes adm-main { from { transform: translate3d(0, 40px, 0) } to { transform: none } }
+@keyframes adm-dock { from { opacity: 0; transform: translate3d(-10px, 0, 0) } to { opacity: 1; transform: none } }
+@keyframes adm-pop-in { from { transform: scale(.6) } to { transform: none } }
+@keyframes adm-item { from { opacity: 0; transform: translate3d(0, -8px, 0) } to { opacity: 1; transform: none } }
+.adm .enter-top { animation: adm-top 800ms var(--expo) both; }
+.adm .enter-main { animation: adm-main 1000ms var(--expo) both 50ms; }
+.adm .enter-dock > * { animation: adm-dock 450ms var(--expo) both; animation-delay: calc(300ms + var(--i, 0) * 35ms); }
+.adm .enter-item { animation: adm-item 450ms var(--expo) both; animation-delay: calc(120ms + var(--i, 0) * 40ms); }
+.adm .pill-pop { animation: adm-pop-in 600ms var(--back) both 450ms; }
+/* карточки: каскад снизу */
+@keyframes adm-rise { from { opacity: 0; transform: translate3d(0, 18px, 0) } to { opacity: 1; transform: none } }
+.adm .rise { animation: adm-rise 600ms var(--expo) both; animation-delay: calc(var(--i, 0) * 60ms); }
+/* строки списков */
+@keyframes adm-row { from { opacity: 0; transform: translate3d(0, 8px, 0) } to { opacity: 1; transform: none } }
+.adm .row-in > * { animation: adm-row 450ms var(--expo) both; animation-delay: calc(80ms + var(--i, 0) * 40ms); }
+/* графики */
+@keyframes adm-draw { from { stroke-dashoffset: var(--len, 2000) } to { stroke-dashoffset: 0 } }
+.adm .draw { stroke-dasharray: var(--len, 2000); animation: adm-draw 1300ms var(--ease-k) both 250ms; }
+@keyframes adm-fade { from { opacity: 0 } to { opacity: 1 } }
+.adm .fill-in { animation: adm-fade 900ms ease-out both 500ms; }
+@keyframes adm-grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+.adm .grow { transform-origin: left center; animation: adm-grow 900ms var(--expo) both; animation-delay: calc(200ms + var(--i, 0) * 50ms); }
+@keyframes adm-breathe { 0%, 100% { opacity: .35 } 50% { opacity: 1 } }
+.adm .breathe { animation: adm-breathe 2.2s ease-in-out infinite; }
+/* колокольчик качается, когда есть новое */
+@keyframes adm-ring { 0% { transform: rotate(0) } 20% { transform: rotate(16deg) } 40% { transform: rotate(-14deg) } 60% { transform: rotate(10deg) } 80% { transform: rotate(-6deg) } 100% { transform: rotate(0) } }
+.adm .bell-ring svg { transform-origin: 50% 10%; animation: adm-ring 800ms ease-out 1 900ms; }
+/* без анимаций по просьбе системы: всё сразу на месте */
+@media (prefers-reduced-motion: reduce) {
+  .adm .enter-top, .adm .enter-main, .adm .enter-dock > *, .adm .enter-item, .adm .pill-pop, .adm .rise, .adm .row-in > *, .adm .draw, .adm .fill-in, .adm .grow, .adm .bell-ring svg, .adm .breathe { animation: none !important; opacity: 1; transform: none; stroke-dasharray: none; }
+}
+/* смена темы: круг раскрывается от кнопки (View Transitions) */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+/* сегменты со скользящей «таблеткой» */
+.adm .seg { position: relative; display: inline-flex; padding: 3px; border-radius: 13px; background: var(--card-2); box-shadow: inset 0 0 0 1px var(--line-c); }
+.adm .seg__thumb { position: absolute; top: 3px; bottom: 3px; border-radius: 10px; background: var(--thumb); box-shadow: 0 2px 8px -2px rgba(0, 0, 0, .4); transition: transform 380ms var(--expo), width 380ms var(--expo); pointer-events: none; }
+.adm .seg button { position: relative; z-index: 1; transition: color 250ms var(--ease-k); }
+.adm .seg button[aria-pressed=true] { color: var(--on-thumb); }
+
+/* слабые устройства (≤4 ядер / ≤3 ГБ / экономия трафика): короче и проще анимации */
+.lite .layer-in { animation: px-fade 140ms ease-out both; box-shadow: none; }
+.lite .layer-out { animation-duration: 160ms; }
+.lite .tab-root, .lite .fade-in { animation: none; }
+.lite .photo-img { transition: none; }
+.lite .adm .rise, .lite .adm .row-in > *, .lite .adm .enter-dock > *, .lite .adm .enter-item { animation: none !important; }
+/* установленное приложение: без выделения текста по долгому тапу, как в нативном */
+.standalone body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.standalone input, .standalone textarea { -webkit-user-select: text; user-select: text; }
+/* сенсорные экраны: зона нажатия у мелких иконок не меньше 44px */
+@media (pointer: coarse) {
+  .press.size-8, .press.size-9 { position: relative; }
+  .press.size-8::after, .press.size-9::after { content: ""; position: absolute; inset: -6px; }
+}

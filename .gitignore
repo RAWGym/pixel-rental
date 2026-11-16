@@ -1,0 +1,28 @@
+# зависимости и сборки
+node_modules/
+dist/
+dist-web/
+*.tsbuildinfo
+.vercel/
+
+# секреты и локальные настройки
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Supabase CLI (локальные файлы)
+supabase/.temp/
+supabase/.branches/
+
+# системное
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.idea/
+.vscode/
+*.zip
+*.tar
+*.tar.gz
