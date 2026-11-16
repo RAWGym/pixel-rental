@@ -17,6 +17,8 @@ const KIND_DEFAULT: Record<CategoryId, string> = {
   softboxes: 'Софтбокс', filters: 'Фильтр', stands: 'Стойка', cables: 'Кабель',
 }
 const BRANDS: [RegExp, string][] = [
+  // сначала сторонние производители: «Sigma … Canon», «Godox V860 Sony» — бренд по производителю
+  [/sigma/i, 'Sigma'], [/tamron/i, 'Tamron'], [/samyang/i, 'Samyang'], [/sirui/i, 'Sirui'], [/godox/i, 'Godox'], [/tilta/i, 'Tilta'], [/smallrig/i, 'SmallRig'], [/k&f/i, 'K&F Concept'],
   [/sony|zeiss/i, 'Sony'], [/canon/i, 'Canon'], [/fuj/i, 'Fujifilm'], [/ronin|osmo|dji|\bmic\b/i, 'DJI'], [/blackmagic/i, 'Blackmagic'],
   [/go ?pro/i, 'GoPro'], [/sigma/i, 'Sigma'], [/tamron/i, 'Tamron'], [/samyang/i, 'Samyang'], [/laowa/i, 'Laowa'], [/sirui/i, 'Sirui'],
   [/aputure|amaran/i, 'Aputure'], [/godox/i, 'Godox'], [/nanlite/i, 'Nanlite'], [/hollyland/i, 'Hollyland'], [/rode/i, 'Rode'],

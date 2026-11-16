@@ -10,6 +10,7 @@ import { ProductCard } from './common'
 import { availMap } from '../lib/availability'
 import { byPopularity } from '../lib/popular'
 import { normalizeQuery, plural } from '../lib/format'
+import { mountOf, mountSlug, ADAPTER, UNKNOWN } from '../lib/mount'
 
 const CHUNK = 24
 const POPULAR_Q = ['FX3', 'Петлички', 'Ronin', 'Aputure', 'Дрон', 'Sony 35mm', 'V-mount']
@@ -17,10 +18,12 @@ type Sort = 'popular' | 'new' | 'cheap' | 'expensive'
 const SORTS: { value: Sort; label: string }[] = [{ value: 'popular', label: 'Популярные' }, { value: 'new', label: 'Новые' }, { value: 'cheap', label: 'Дешевле' }, { value: 'expensive', label: 'Дороже' }]
 const PRICE: { label: string; min: number; max: number }[] = [{ label: 'До 3 000', min: 0, max: 3000 }, { label: '3–10 тыс', min: 3000, max: 10000 }, { label: '10+ тыс', min: 10000, max: 1e9 }]
 
-export function matchProduct(p: { name: string; brand: string; kind: string }, q: string) {
+export function matchProduct(p: { name: string; brand: string; kind: string; specs?: string[] }, q: string) {
   const n = normalizeQuery(q)
   if (!n) return true
-  const hay = normalizeQuery(`${p.brand} ${p.name} ${p.kind}`).replace(/[-\s]/g, '')
+  // байонет тоже ищется: «байонет сони», «RF», «е-маунт»
+  const mount = p.specs?.find(x => /^байонет/i.test(x)) ?? ''
+  const hay = normalizeQuery(`${p.brand} ${p.name} ${p.kind} ${mount}`).replace(/[-\s:]/g, '')
   return n.split(/\s+/).filter(Boolean).every(w => hay.includes(w.replace(/[-\s]/g, '')))
 }
 
@@ -29,7 +32,7 @@ const OTHER = 'Pixel'
 const brandLabel = (b: string) => (b === OTHER ? 'Другие' : b)
 const slug = (b: string) => b.toLowerCase().replace(/[^a-z0-9]+/g, '')
 /** ?tab=catalog&cat=cameras&brand=sony,canon — фильтр переживает обновление страницы и делится ссылкой */
-const urlState = () => { try { const u = new URLSearchParams(location.search); return { cat: u.get('cat') as CategoryId | null, brand: (u.get('brand') ?? '').split(',').filter(Boolean) } } catch { return { cat: null, brand: [] as string[] } } }
+const urlState = () => { try { const u = new URLSearchParams(location.search); return { cat: u.get('cat') as CategoryId | null, brand: (u.get('brand') ?? '').split(',').filter(Boolean), mount: (u.get('mount') ?? '').split(',').filter(Boolean) } } catch { return { cat: null, brand: [] as string[], mount: [] as string[] } } }
 
 export function Catalog() {
   const route = useRoute()
@@ -40,6 +43,7 @@ export function Catalog() {
   const [q, setQ] = useState(route.params?.q ?? '')
   const [brands, setBrands] = useState<string[]>(() => init.brand.length ? products.filter(p => init.brand.includes(slug(p.brand))).map(p => p.brand).filter((b, i, a) => a.indexOf(b) === i) : [])
   const [moreBrands, setMoreBrands] = useState(false)
+  const [mounts, setMounts] = useState<string[]>(() => init.mount.length ? products.filter(p => p.category === 'lenses').map(mountOf).filter((m, i, a) => a.indexOf(m) === i && init.mount.includes(mountSlug(m))) : [])
   const [price, setPrice] = useState<number | null>(null)
   const [onlyFree, setOnlyFree] = useState(false)
   const [freeToday, setFreeToday] = useState(false)
@@ -49,7 +53,7 @@ export function Catalog() {
   const chipsRef = useRef<HTMLDivElement>(null)
 
   const firstCat = useRef(true)
-  useEffect(() => { if (firstCat.current) { firstCat.current = false; return } setBrands([]); setMoreBrands(false) }, [cat])
+  useEffect(() => { if (firstCat.current) { firstCat.current = false; return } setBrands([]); setMounts([]); setMoreBrands(false) }, [cat])
   // состояние фильтра — в адресной строке
   useEffect(() => {
     try {
@@ -57,9 +61,10 @@ export function Catalog() {
       if (cat === 'all' && !brands.length && !u.get('cat')) return
       u.set('tab', 'catalog'); if (cat === 'all') u.delete('cat'); else u.set('cat', cat)
       if (brands.length) u.set('brand', brands.map(slug).join(',')); else u.delete('brand')
+      if (mounts.length) u.set('mount', mounts.map(mountSlug).join(',')); else u.delete('mount')
       history.replaceState(history.state, '', `${location.pathname}?${u.toString().replace(/%2C/g, ',')}${location.hash}`)
     } catch { /* noop */ }
-  }, [cat, brands])
+  }, [cat, brands, mounts])
   useEffect(() => {
     const el = chipsRef.current?.querySelector(`[data-cat="${cat}"]`) as HTMLElement | null
     el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
@@ -69,10 +74,18 @@ export function Catalog() {
   const base = useMemo(() => products.filter(p => !p.hidden && (cat === 'all' || p.category === cat) && matchProduct(p, q)), [products, cat, q])
   // бренды текущей категории (с учётом поиска): по числу позиций, «Другие» в конце
   const allBrands = useMemo(() => { const m = new Map<string, number>(); for (const p of base) m.set(p.brand, (m.get(p.brand) ?? 0) + 1); return [...m.entries()].sort((a, b) => Number(a[0] === OTHER) - Number(b[0] === OTHER) || b[1] - a[1] || a[0].localeCompare(b[0])) }, [base])
+  // байонеты — только в «Оптике»
+  const allMounts = useMemo(() => {
+    if (cat !== 'lenses') return []
+    const m = new Map<string, number>(); for (const p of base) { const k = mountOf(p); m.set(k, (m.get(k) ?? 0) + 1) }
+    const tail = (k: string) => (k === ADAPTER ? 2 : k === UNKNOWN ? 1 : 0)
+    return [...m.entries()].sort((a, b) => tail(a[0]) - tail(b[0]) || b[1] - a[1])
+  }, [base, cat])
+  const showMountChips = allMounts.filter(([m]) => m !== ADAPTER && m !== UNKNOWN).length >= 2
   const showBrandChips = cat !== 'all' && allBrands.filter(([b]) => b !== OTHER).length >= 2
   const toggleBrand = (b: string) => { haptic(5); setBrands(brands.includes(b) ? brands.filter(x => x !== b) : [...brands, b]) }
   const list = useMemo(() => {
-    let l = base.filter(p => (!brands.length || brands.includes(p.brand)) && (price === null || (p.price >= PRICE[price].min && p.price < PRICE[price].max)))
+    let l = base.filter(p => (!brands.length || brands.includes(p.brand)) && (!mounts.length || mounts.includes(mountOf(p))) && (price === null || (p.price >= PRICE[price].min && p.price < PRICE[price].max)))
     if (onlyFree) { const m = availMap(units, bookings, city, range.start, range.end); l = l.filter(p => (m.get(p.id)?.free ?? 0) > 0) }
     if (freeToday) { const m = availMap(units, bookings, city, today.start, today.end); l = l.filter(p => (m.get(p.id)?.free ?? 0) > 0) }
     const s = [...l]
@@ -81,7 +94,7 @@ export function Catalog() {
     if (sort === 'cheap') s.sort((a, b) => a.price - b.price)
     if (sort === 'expensive') s.sort((a, b) => b.price - a.price)
     return s
-  }, [base, brands, price, onlyFree, freeToday, today, sort, units, bookings, city, range, pop])
+  }, [base, brands, mounts, price, onlyFree, freeToday, today, sort, units, bookings, city, range, pop])
   // Рендерим карточки порциями: первые 24, дальше +24 при подходе к низу
   const [page, setPage] = useState({ list, n: CHUNK })
   if (page.list !== list) setPage({ list, n: CHUNK }) // сброс при смене фильтров — до отрисовки
@@ -96,7 +109,7 @@ export function Catalog() {
     io.observe(el)
     return () => io.disconnect()
   }, [more, shown])
-  const activeFilters = brands.length + (price !== null ? 1 : 0) + (onlyFree ? 1 : 0) + (freeToday ? 1 : 0)
+  const activeFilters = brands.length + mounts.length + (price !== null ? 1 : 0) + (onlyFree ? 1 : 0) + (freeToday ? 1 : 0)
 
   const filters = (
         <div className="flex flex-col gap-6">
@@ -183,6 +196,21 @@ export function Catalog() {
         )
       })()}
 
+      {showMountChips && (() => {
+        const chip = (on: boolean) => cx('press shrink-0 h-9 px-3.5 rounded-full text-sm whitespace-nowrap flex items-center gap-1.5 transition-colors duration-200', on ? 'bg-accent/15 text-accent font-medium ring-1 ring-accent/40' : 'bg-surface text-fg/85 hover:text-fg')
+        return (
+          <div role="group" aria-label="Байонет" className="fade-in flex gap-2 items-center overflow-x-auto scrollbar-none -mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 desk:flex-wrap desk:overflow-visible">
+            <span className="text-xs text-faint shrink-0 pr-1">Байонет</span>
+            <button aria-pressed={!mounts.length} onClick={() => setMounts([])} className={chip(!mounts.length)}>Все</button>
+            {allMounts.map(([m, n]) => (
+              <button key={m} aria-pressed={mounts.includes(m)} onClick={() => { haptic(5); setMounts(mounts.includes(m) ? mounts.filter(x => x !== m) : [...mounts, m]) }} className={chip(mounts.includes(m))}>
+                {m}<span className="text-xs opacity-50 tnum">{n}</span>
+              </button>
+            ))}
+          </div>
+        )
+      })()}
+
       <div className="flex gap-2 flex-wrap">
         {([['today', 'Свободно сегодня', freeToday, setFreeToday], ['dates', 'Свободно на мои даты', onlyFree, setOnlyFree]] as const).map(([k, l, on, set]) => (
           <button key={k} onClick={() => { set(!on); haptic(5) }} className={cx('press h-9 px-3.5 rounded-full text-sm flex items-center gap-1.5', on ? 'bg-ok/15 text-ok font-medium' : 'bg-surface-2 text-fg/85')}>
@@ -191,8 +219,8 @@ export function Catalog() {
         ))}
       </div>
 
-      {(brands.length > 0 || freeToday || onlyFree || price !== null) && (
-        <div className="flex items-center gap-3 text-sm -mt-1"><span className="text-muted tnum">Найдено {list.length}</span><button onClick={() => { setBrands([]); setPrice(null); setOnlyFree(false); setFreeToday(false) }} className="text-accent font-medium">Сбросить</button></div>
+      {(brands.length > 0 || mounts.length > 0 || freeToday || onlyFree || price !== null) && (
+        <div className="flex items-center gap-3 text-sm -mt-1"><span className="text-muted tnum">Найдено {list.length}</span><button onClick={() => { setBrands([]); setMounts([]); setPrice(null); setOnlyFree(false); setFreeToday(false) }} className="text-accent font-medium">Сбросить</button></div>
       )}
 
       <div key={cat + sort} className="fade-in">
