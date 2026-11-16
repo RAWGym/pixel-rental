@@ -1,3 +1,5 @@
+import { useShop } from '../store/shop'
+import { ShopCartPanel } from './Shop'
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trash2, ShoppingBag, Tag, ShieldCheck, AlertTriangle, ChevronRight } from 'lucide-react'
@@ -5,7 +7,7 @@ import { Share2 } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore, useMe } from '../store/store'
 import { useNav } from '../store/nav'
-import { ProductArt, Button, Stepper, Empty, AnimatedNumber, cx, toast, haptic } from '../ui/kit'
+import { ProductArt, Button, Stepper, Empty, AnimatedNumber, Segmented, cx, toast, haptic } from '../ui/kit'
 import { DateBar, SectionTitle, ProductCard } from './common'
 import { calcPrice, rentalDays, nextTier, DAY } from '../lib/pricing'
 import { shareKit } from './Extras'
@@ -25,7 +27,21 @@ export function useCartTotals() {
   }, [cart, products, settings, range, promo, me])
 }
 
+/** Корзина: аренда и магазин раздельно (свои итоги и оформление); переключатель, когда есть покупки */
 export function CartScreen() {
+  const shopN = useShop(s => s.cart.reduce((a, c) => a + c.qty, 0))
+  const rentN = useStore(s => s.cart.reduce((a, c) => a + c.qty, 0))
+  const [mode, setMode] = useState<'rent' | 'shop'>(() => (rentN === 0 && shopN > 0 ? 'shop' : 'rent'))
+  if (!shopN) return <RentalCart />
+  return (
+    <div className="flex flex-col gap-4">
+      <Segmented layoutId="cart-mode" value={mode} onChange={setMode} options={[{ value: 'rent', label: `Аренда${rentN ? ` · ${rentN}` : ''}` }, { value: 'shop', label: `Магазин · ${shopN}` }]} />
+      {mode === 'rent' ? <RentalCart /> : <div className="pb-40 lg:pb-10"><ShopCartPanel embedded /></div>}
+    </div>
+  )
+}
+
+function RentalCart() {
   const setRange = useStore(s => s.setRange)
   const { setQty, units, bookings, city, range, settings, promo, setPromo, products, clearCart, addToCart } = useStore(useShallow(s => ({ setQty: s.setQty, units: s.units, bookings: s.bookings, city: s.city, range: s.range, settings: s.settings, promo: s.promo, setPromo: s.setPromo, products: s.products, clearCart: s.clearCart, addToCart: s.addToCart })))
   const go = useNav(s => s.go), tab = useNav(s => s.tab)

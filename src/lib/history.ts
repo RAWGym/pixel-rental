@@ -8,12 +8,14 @@ import { useStore } from '../store/store'
 import { sheetStack, sheetListeners } from './native'
 
 const isAdmin = () => location.hash === '#admin' || /^\/admin\/?$/.test(location.pathname)
-const urlFor = (name: RouteName, params?: Record<string, any>) => (name === 'product' && params?.id ? `/product/${encodeURIComponent(params.id)}` : null)
+const urlFor = (name: RouteName, params?: Record<string, any>) => (name === 'product' && params?.id ? `/product/${encodeURIComponent(params.id)}` : name === 'shop' ? '/shop' : name === 'shopProduct' && params?.id ? `/shop/${encodeURIComponent(params.id)}` : null)
 
 /** /catalog, /cart, /bookings, /profile, /product/<id> — открыть нужный экран при заходе по ссылке */
 export function openFromPath() {
-  const m = location.pathname.match(/^\/(catalog|cart|bookings|profile|favorites|contacts|terms)\/?$/)
+  const m = location.pathname.match(/^\/(catalog|cart|bookings|profile|favorites|contacts|terms|shop)\/?$/)
   if (m) { const n = m[1] as RouteName; if (TABS.includes(n)) useNav.getState().tab(n); else useNav.getState().go(n) ; return }
+  const sm = location.pathname.match(/^\/shop\/([^/]+)\/?$/)
+  if (sm) { useNav.getState().go('shop'); useNav.getState().go('shopProduct', { id: decodeURIComponent(sm[1]) }); return }
   const pm = location.pathname.match(/^\/product\/([^/]+)\/?$/)
   if (pm) {
     const id = decodeURIComponent(pm[1])
@@ -40,7 +42,7 @@ export function bindHistory() {
     if (len > from) act(() => { for (let i = from; i < len; i++) history.pushState({ pxDepth: i + 1 }, '', urlFor(routes[i].name, routes[i].params) ?? undefined) })
     else if (len < from) act(() => { ignore++; history.go(len - from) })
     else if (s.kind === 'replace') act(() => history.replaceState({ pxDepth: len }, '', urlFor(top.name, top.params) ?? undefined))
-    else if (s.kind === 'tab' && /^\/(product|catalog|cart|bookings|profile)/.test(location.pathname)) act(() => history.replaceState({ pxDepth: len }, '', '/' + location.search))
+    else if (s.kind === 'tab' && /^\/(product|catalog|cart|bookings|profile|shop)/.test(location.pathname)) act(() => history.replaceState({ pxDepth: len }, '', '/' + location.search))
     depth = len
   })
   // шторка = отдельная запись в истории: «Назад» закрывает её

@@ -1,5 +1,5 @@
 // Мост к нативной обёртке (Expo / React Native WebView). В браузере просто ничего не делает.
-type Msg = { type: 'haptic'; style?: 'light' | 'medium' | 'success' } | { type: 'exit' } | { type: 'ready' } | { type: 'theme'; color: string }
+type Msg = { type: 'haptic'; style?: 'light' | 'medium' | 'success' } | { type: 'exit' } | { type: 'ready' } | { type: 'theme'; color: string } | { type: 'open-url'; url: string }
 
 export const isNative = () => typeof window !== 'undefined' && !!(window as any).ReactNativeWebView
 

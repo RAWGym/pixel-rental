@@ -185,10 +185,10 @@ export function buildAll(opts: { history?: boolean } = {}) {
   }))
 
   const roles: Role[] = [
-    { id: 'owner', name: 'Владелец', color: '#FF962E', system: true, permissions: ['dashboard', 'bookings.view', 'bookings.edit', 'bookings.cancel', 'calendar', 'products.view', 'products.edit', 'pricing.edit', 'units.edit', 'leads', 'customers', 'customers.blacklist', 'verify', 'issue', 'issue.override', 'contracts.void', 'staff', 'settings', 'finance'] },
-    { id: 'manager', name: 'Менеджер', color: '#5AB0FF', permissions: ['dashboard', 'bookings.view', 'bookings.edit', 'bookings.cancel', 'calendar', 'products.view', 'leads', 'customers', 'verify', 'issue', 'issue.override'] },
-    { id: 'warehouse', name: 'Кладовщик', color: '#7EE08A', permissions: ['dashboard', 'bookings.view', 'calendar', 'products.view', 'units.edit', 'issue'] },
-    { id: 'accountant', name: 'Бухгалтер', color: '#C9A7FF', permissions: ['dashboard', 'bookings.view', 'finance', 'customers'] },
+    { id: 'owner', name: 'Владелец', color: '#FF962E', system: true, permissions: ['dashboard', 'bookings.view', 'bookings.edit', 'bookings.cancel', 'calendar', 'products.view', 'products.edit', 'pricing.edit', 'units.edit', 'leads', 'customers', 'customers.blacklist', 'verify', 'issue', 'issue.override', 'contracts.void', 'shop', 'shop.view', 'staff', 'settings', 'finance'] },
+    { id: 'manager', name: 'Менеджер', color: '#5AB0FF', permissions: ['dashboard', 'bookings.view', 'bookings.edit', 'bookings.cancel', 'calendar', 'products.view', 'leads', 'customers', 'verify', 'issue', 'issue.override', 'shop', 'shop.view'] },
+    { id: 'warehouse', name: 'Кладовщик', color: '#7EE08A', permissions: ['dashboard', 'bookings.view', 'calendar', 'products.view', 'units.edit', 'issue', 'shop.view'] },
+    { id: 'accountant', name: 'Бухгалтер', color: '#C9A7FF', permissions: ['dashboard', 'bookings.view', 'finance', 'customers', 'shop.view'] },
   ]
   const staff: Staff[] = [
     { id: 's1', name: 'Арман Нургалиев', phone: '+7 701 000 00 01', roleId: 'owner', city: 'all', active: true, pin: '0000', createdAt: now - 700 * day },

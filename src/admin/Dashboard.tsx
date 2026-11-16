@@ -1,3 +1,4 @@
+import { useShopStats } from './ShopAdmin'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUpRight, ArrowDownLeft, AlertTriangle, Inbox, ShieldCheck, Wrench, Flame, Wallet, Download, TrendingDown, ChevronRight, Check, ArrowRight, Receipt, Gauge, UserPlus, Sparkles, CheckCircle2, XCircle, Phone } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
@@ -677,7 +678,22 @@ export function Dashboard() {
           <div className="text-xs text-muted">Совет: попробуйте −15% на 2 недели или включите эти позиции в готовые комплекты «Что снимаем?».</div>
         </Card>
       )}
+      {(can('shop') || can('shop.view')) && <ShopCard from={from} to={to} label={label} />}
       {!fin && !ops && !wh && <Badge>Для вашей роли данных на дашборде нет</Badge>}
     </div>
+  )
+}
+
+/** магазин: выручка и заказы отдельно от аренды */
+function ShopCard({ from, to, label }: { from: number; to: number; label: string }) {
+  const st = useShopStats(from, to)
+  const go = useAdminNav(s => s.go)
+  return (
+    <Card i={17} title="Магазин" sub={`продажи ${label}`} action={<button onClick={() => go('shop')} className="text-sm text-muted hover:text-fg flex items-center gap-1 shrink-0">Открыть <ArrowRight className="size-4" /></button>}>
+      <div className="grid grid-cols-3 gap-2">
+        {[['Выручка', `${compact(st.revenue)} ₸`], ['Заказы', String(st.count)], ['Средний чек', st.avg ? money(st.avg) : '-']].map(([l, v]) => <div key={l} className="rounded-xl bg-surface-2 p-3"><div className="text-xs text-muted">{l}</div><div className="tnum font-semibold text-lg truncate">{v}</div></div>)}
+      </div>
+      {st.top.length > 0 && <ol className="flex flex-col gap-1 text-sm">{st.top.map(([t, n]) => <li key={t} className="flex justify-between gap-3"><span className="truncate">{t}</span><span className="tnum text-muted">{n} шт</span></li>)}</ol>}
+    </Card>
   )
 }

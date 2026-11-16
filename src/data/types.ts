@@ -155,7 +155,7 @@ export type Permission =
   | 'dashboard' | 'bookings.view' | 'bookings.edit' | 'bookings.cancel' | 'calendar'
   | 'products.view' | 'products.edit' | 'pricing.edit' | 'units.edit'
   | 'leads' | 'customers' | 'customers.blacklist' | 'staff' | 'settings' | 'finance'
-  | 'verify' | 'issue' | 'issue.override' | 'contracts.void'
+  | 'verify' | 'issue' | 'issue.override' | 'contracts.void' | 'shop' | 'shop.view'
 
 export interface Role { id: string; name: string; color: string; permissions: Permission[]; system?: boolean }
 export interface Staff { id: string; name: string; phone: string; roleId: string; city: CityId | 'all'; active: boolean; pin: string; createdAt: number }

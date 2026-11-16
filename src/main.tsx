@@ -35,6 +35,7 @@ if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
   Promise.all([import('./data/supabase'), import('./data/api')]).then(async ([m, a]) => {
     a.setApi(m.SupabaseAdapter)
     m.mirrorStoreWrites()
+    import('./data/shopRemote').then(s => s.mirrorShopWrites())
     // ссылка «сбросить пароль» из письма — открываем экран нового пароля
     m.watchClientRecovery(() => useNav.getState().go('auth', { recovery: true }))
     await m.hydrate().catch(e => console.warn('[supabase] hydrate', e))

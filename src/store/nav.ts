@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 import { create } from 'zustand'
 
-export type RouteName = 'home' | 'catalog' | 'product' | 'search' | 'cart' | 'checkout' | 'success' | 'bookings' | 'booking' | 'profile' | 'favorites' | 'kit' | 'contacts' | 'terms' | 'auth' | 'verify' | 'scene' | 'compare'
+export type RouteName = 'home' | 'catalog' | 'product' | 'search' | 'cart' | 'checkout' | 'success' | 'bookings' | 'booking' | 'profile' | 'favorites' | 'kit' | 'contacts' | 'terms' | 'auth' | 'verify' | 'scene' | 'compare' | 'shop' | 'shopProduct' | 'shopCart' | 'shopDone' | 'shopOrders'
 export interface Route { name: RouteName; params?: Record<string, any>; key: number }
 export const TABS: RouteName[] = ['home', 'catalog', 'cart', 'bookings', 'profile']
 

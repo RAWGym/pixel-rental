@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { LayoutDashboard, CalendarRange, ClipboardList, Package, Inbox, Users, UserCog, Settings as SettingsI, History, LogOut, ArrowLeft, Lock, Search, MoreHorizontal, Plus, UserPlus, Sun, Moon, PackageCheck } from 'lucide-react'
+import { LayoutDashboard, CalendarRange, ClipboardList, Package, Inbox, Users, UserCog, Settings as SettingsI, History, LogOut, ArrowLeft, Lock, Search, MoreHorizontal, Plus, UserPlus, Sun, Moon, PackageCheck, Store } from 'lucide-react'
 import { useStore } from '../store/store'
 import { Logo, cx, Toasts, Button, Badge } from '../ui/kit'
 import type { Permission } from '../data/types'
@@ -16,6 +16,8 @@ import { CustomersAdmin } from './CustomersAdmin'
 import { StaffAdmin } from './StaffAdmin'
 import { SettingsAdmin, AuditAdmin } from './SettingsAdmin'
 import { IssueAdmin } from './IssueAdmin'
+import { ShopAdmin } from './ShopAdmin'
+import { useShop } from '../store/shop'
 
 import { useAdminNav, type AdminPage } from './adminNav'
 export { useAdminNav, type AdminPage }
@@ -26,6 +28,7 @@ const NAV: { id: AdminPage; label: string; short?: string; icon: any; perm: Perm
   { id: 'issue', label: 'Выдача', icon: PackageCheck, perm: 'issue' },
   { id: 'calendar', label: 'Шахматка', short: 'Календарь', icon: CalendarRange, perm: 'calendar' },
   { id: 'products', label: 'Товары и наличие', short: 'Товары', icon: Package, perm: 'products.view' },
+  { id: 'shop', label: 'Магазин', icon: Store, perm: 'shop.view' },
   { id: 'leads', label: 'Заявки', icon: Inbox, perm: 'leads' },
   { id: 'customers', label: 'Клиенты', icon: Users, perm: 'customers' },
   { id: 'staff', label: 'Сотрудники и роли', short: 'Команда', icon: UserCog, perm: 'staff' },
@@ -97,9 +100,10 @@ export function AdminApp() {
     // без настоящей сессии Supabase админка закрыта, даже если в браузере остался демо-вход
     if (!auth.email || auth.pendingRole || !me) return auth.email && auth.pendingRole ? <StaffPending /> : <StaffLogin />
   } else if (!me) return <Login />
-  const allowed = NAV.filter(n => can(n.perm))
-  const badge = (id: AdminPage) => id === 'leads' ? leads.filter(l => l.status === 'new').length : id === 'bookings' ? bookings.filter(b => b.status === 'new').length : id === 'issue' ? bookings.filter(b => b.status === 'issued' && b.end < Date.now()).length : 0
-  const Page = { dashboard: Dashboard, bookings: BookingsAdmin, issue: IssueAdmin, calendar: CalendarAdmin, products: ProductsAdmin, leads: LeadsAdmin, customers: CustomersAdmin, staff: StaffAdmin, settings: SettingsAdmin, audit: AuditAdmin }[page]
+  const allowed = NAV.filter(n => can(n.perm) || (n.id === 'shop' && can('shop')))
+  const shopNew = useShop.getState().orders.filter(o => o.status === 'whatsapp').length
+  const badge = (id: AdminPage) => id === 'leads' ? leads.filter(l => l.status === 'new').length : id === 'bookings' ? bookings.filter(b => b.status === 'new').length : id === 'issue' ? bookings.filter(b => b.status === 'issued' && b.end < Date.now()).length : id === 'shop' ? shopNew : 0
+  const Page = { dashboard: Dashboard, bookings: BookingsAdmin, issue: IssueAdmin, shop: ShopAdmin, calendar: CalendarAdmin, products: ProductsAdmin, leads: LeadsAdmin, customers: CustomersAdmin, staff: StaffAdmin, settings: SettingsAdmin, audit: AuditAdmin }[page]
 
   const Side = (
     <div className="flex flex-col h-full gap-1 p-3">

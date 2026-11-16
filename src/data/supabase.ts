@@ -119,6 +119,8 @@ export async function hydrate() {
     patch.leads = []
   }
   useStore.setState(patch)
+  // магазин: каталог всем, заказы — сотрудникам и владельцу заказа
+  await import('./shopRemote').then(m => m.hydrateShop()).catch(e => console.warn('[shop] hydrate', e))
 }
 
 /* ---------- PixelApi ---------- */
@@ -286,7 +288,7 @@ async function afterStaffSignIn() {
   await hydrate()
   const isStaff = !!st().staffId
   useStaffAuth.setState({ pendingRole: !isStaff })
-  if (isStaff) startRealtime()
+  if (isStaff) { startRealtime(); import('./shopRemote').then(m => m.startShopRealtime()) }
 }
 
 export async function staffSignIn(email: string, password: string): Promise<Result<null>> {

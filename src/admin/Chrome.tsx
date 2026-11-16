@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { Search, Bell, Plus, ClipboardList, Users, Package, Inbox, ShieldCheck, AlertTriangle, CornerDownLeft, X, PackageCheck } from 'lucide-react'
+import { Search, Bell, Plus, ClipboardList, Users, Package, Inbox, ShieldCheck, AlertTriangle, CornerDownLeft, X, PackageCheck, Store } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../store/store'
+import { useShop } from '../store/shop'
+const normQ = (s: string) => s.toLowerCase().replace(/\s/g, '')
 import { useAdminNav, type AdminPage } from './Admin'
 import { cx, ProductArt } from '../ui/kit'
 import { money, dShort, relTime } from '../lib/format'
@@ -38,6 +40,9 @@ export function CommandPalette({ open, onClose, pages }: { open: boolean; onClos
     const cs = customers.filter(c => norm(c.name).includes(n) || norm(c.phone).includes(n) || norm(c.iin ?? '').includes(n)).slice(0, 5)
     out.push(...cs.map(c => ({ key: c.id, group: 'Клиенты', title: c.name, sub: c.phone, icon: <Users className="size-4" />, run: () => go('customers', c.id) })))
     const ps = products.filter(p => norm(`${p.brand}${p.name}${p.kind}`).includes(n)).slice(0, 6)
+    const sh = useShop.getState()
+    out.push(...sh.orders.filter(o => normQ(o.code + o.name + o.phone).includes(n)).slice(0, 4).map(o => ({ key: o.id, group: 'Магазин', title: `${o.code} · ${o.name}`, sub: money(o.total), icon: <Store className="size-4" />, run: () => go('shop', o.id) })))
+    out.push(...sh.products.filter(p => normQ(p.brand + p.title).includes(n)).slice(0, 4).map(p => ({ key: 'sp-' + p.id, group: 'Магазин', title: `${p.brand} ${p.title}`, sub: `${money(p.price)} · ${p.stock} шт`, icon: <Store className="size-4" />, run: () => go('shop') })))
     out.push(...ps.map(p => ({ key: p.id, group: 'Товары', title: p.name, sub: `${money(p.price)}/сут`, icon: <ProductArt p={p} size="sm" className="size-8 rounded-md" />, run: () => go('products', p.id) })))
     return out
   }, [q, bookings, customers, products, cName, pages])

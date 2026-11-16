@@ -1,6 +1,6 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useAnimationControls } from 'framer-motion'
-import { Home as HomeI, LayoutGrid, ShoppingBag, CalendarCheck, User, Search, ChevronDown, Heart } from 'lucide-react'
+import { Home as HomeI, LayoutGrid, ShoppingBag, CalendarCheck, User, Search, ChevronDown, Heart, Store } from 'lucide-react'
 import { useStore } from '../store/store'
 import { useNav, RouteCtx, type Route, type RouteName } from '../store/nav'
 import { Logo, cx, Toasts, haptic } from '../ui/kit'
@@ -16,17 +16,22 @@ import { ProfileScreen, Favorites, KitBuilder, Contacts, Terms } from './Profile
 import { AuthScreen, VerifyScreen } from './Auth'
 import { SceneScreen, CompareScreen, CompareBar, Onboarding } from './Extras'
 import { PullToRefresh, UpdateBanner } from './Refresh'
+import { ShopScreen, ShopProductScreen, ShopCartScreen, ShopDone, ShopOrders } from './Shop'
+import { useShop } from '../store/shop'
 
 const SCREENS: Record<RouteName, () => JSX.Element | null> = {
   home: Home, catalog: Catalog, product: ProductScreen, search: Catalog, cart: CartScreen, checkout: Checkout, success: Success,
   bookings: BookingsScreen, booking: BookingDetail, profile: ProfileScreen, favorites: Favorites, kit: KitBuilder, contacts: Contacts, terms: Terms, auth: AuthScreen, verify: VerifyScreen, scene: SceneScreen, compare: CompareScreen,
+  shop: ShopScreen, shopProduct: ShopProductScreen, shopCart: ShopCartScreen, shopDone: ShopDone, shopOrders: ShopOrders,
 }
 const TABS: { name: RouteName; label: string; icon: any }[] = [
   { name: 'home', label: 'Главная', icon: HomeI }, { name: 'catalog', label: 'Каталог', icon: LayoutGrid }, { name: 'cart', label: 'Корзина', icon: ShoppingBag },
   { name: 'bookings', label: 'Брони', icon: CalendarCheck }, { name: 'profile', label: 'Профиль', icon: User },
 ]
+const SHOP_ROUTES: RouteName[] = ['shop', 'shopProduct', 'shopCart', 'shopDone', 'shopOrders']
 const SITE_NAV: { label: string; go: () => void; match: (cur: RouteName, active: RouteName) => boolean }[] = [
-  { label: 'Каталог', go: () => useNav.getState().tab('catalog'), match: (c, a) => a === 'catalog' && c !== 'kit' },
+  { label: 'Магазин', go: () => useNav.getState().go('shop'), match: c => SHOP_ROUTES.includes(c) },
+  { label: 'Каталог', go: () => useNav.getState().tab('catalog'), match: (c, a) => a === 'catalog' && c !== 'kit' && !SHOP_ROUTES.includes(c) },
   { label: 'Комплекты', go: () => useNav.getState().go('kit'), match: c => c === 'kit' },
   { label: 'Контакты', go: () => useNav.getState().go('contacts'), match: c => c === 'contacts' },
   { label: 'Корзина', go: () => useNav.getState().tab('cart'), match: (c, a) => a === 'cart' },
@@ -59,10 +64,11 @@ function SiteFooter() {
   )
 }
 
-const ROOT_OF: Partial<Record<RouteName, RouteName>> = { product: 'catalog', checkout: 'cart', success: 'cart', booking: 'bookings', favorites: 'profile', kit: 'home', contacts: 'profile', terms: 'profile', search: 'catalog', auth: 'profile', verify: 'profile', scene: 'home', compare: 'catalog' }
+const ROOT_OF: Partial<Record<RouteName, RouteName>> = { product: 'catalog', checkout: 'cart', success: 'cart', booking: 'bookings', favorites: 'profile', kit: 'home', contacts: 'profile', terms: 'profile', search: 'catalog', auth: 'profile', verify: 'profile', scene: 'home', compare: 'catalog', shop: 'home', shopProduct: 'home', shopCart: 'cart', shopDone: 'cart', shopOrders: 'profile' }
 
 function CartCount() {
-  const n = useStore(s => s.cart.reduce((a, c) => a + c.qty, 0))
+  // аренда + покупки в магазине
+  const n = useStore(s => s.cart.reduce((a, c) => a + c.qty, 0)) + useShop(s => s.cart.reduce((a, c) => a + c.qty, 0))
   const ctl = useAnimationControls()
   const prev = useRef(n)
   useEffect(() => { if (n > prev.current) ctl.start({ scale: [1, 1.25, 1], transition: { duration: 0.3, ease: 'easeOut' } }); prev.current = n }, [n])
@@ -187,6 +193,8 @@ export function ClientApp() {
             })}
           </nav>
           <div className="ml-auto flex items-center gap-1">
+            {/* магазин: на телефоне кнопка в шапке (таб-бар не перегружаем), на ПК пункт меню */}
+            <button aria-label="Магазин" onClick={() => useNav.getState().go('shop')} className="desk:hidden h-10 px-2.5 grid place-items-center rounded-xl hover:bg-surface-2"><Store className="size-5" /></button>
             <button aria-label="Поиск" onClick={() => { tab('catalog'); setTimeout(() => document.getElementById('catalog-search')?.focus(), 250) }} className="size-10 grid place-items-center rounded-xl hover:bg-surface-2"><Search className="size-5" /></button>
             <button aria-label="Избранное" onClick={() => useNav.getState().go('favorites')} className="hidden desk:grid size-10 place-items-center rounded-xl hover:bg-surface-2"><Heart className="size-5" /></button>
           </div>

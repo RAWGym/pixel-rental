@@ -13,7 +13,7 @@ import { useNav } from '../store/nav'
 const BANNERS: { src: string; big: string; alt: string; open?: () => void }[] = [
   { src: d1200, big: d2149, alt: 'Скидки до 30%', open: () => useNav.getState().go('terms', { q: 'Есть ли скидки за срок?' }) },
   { src: v1200, big: v2149, alt: 'Доступна доставка оборудования', open: () => useNav.getState().go('terms', { q: 'Доставка' }) },
-  { src: s1200, big: s2149, alt: 'Pixel Shop. Магазин фото-видео техники' },
+  { src: s1200, big: s2149, alt: 'Pixel Shop. Магазин фото-видео техники', open: () => useNav.getState().go('shop') },
 ]
 const AUTO_MS = 5000
 

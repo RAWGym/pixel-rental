@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, MapPin, HelpCircle, LogOut, ChevronRight, ChevronLeft, ShieldCheck, Sparkles, Check, Phone, Navigation, Send, RotateCcw, LayoutDashboard, Plus } from 'lucide-react'
-import { Columns3, Presentation, Clock, Download } from 'lucide-react'
+import { Columns3, Presentation, Clock, Download, ShoppingBag } from 'lucide-react'
+import { useShop } from '../store/shop'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore, useMe } from '../store/store'
 import { useNav, useRoute } from '../store/nav'
@@ -35,6 +36,7 @@ export function ProfileScreen() {
   const [demoOpen, setDemoOpen] = useState(false)
   const inst = useInstall()
   const compareN = useStore(s => (s.compare ?? []).length)
+  const shopOrdersN = useShop(s => s.orders.length)
   const runDemo = useStore(s => s.runDemo)
   const reminders = useMemo(() => {
     if (!me) return []
@@ -93,6 +95,7 @@ export function ProfileScreen() {
       <div className="flex flex-col gap-5 min-w-0">
 
       <div className="rounded-2xl bg-surface divide-y divide-line overflow-hidden">
+        <Row icon={<ShoppingBag className="size-4" />} label="Мои покупки" hint={shopOrdersN ? `${shopOrdersN}` : undefined} onClick={() => go('shopOrders')} />
         <Row icon={<Heart className="size-4" />} label="Избранное" hint={`${favorites.length} позиций`} onClick={() => go('favorites')} />
         <Row icon={<Columns3 className="size-4" />} label="Сравнение" hint={compareN ? `${compareN} из 3` : undefined} onClick={() => go('compare')} />
         <Row icon={<Sparkles className="size-4" />} label="Собрать комплект под съёмку" onClick={() => go('kit')} />
