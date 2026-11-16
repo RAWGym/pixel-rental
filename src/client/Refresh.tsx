@@ -63,13 +63,15 @@ export function PullToRefresh() {
   )
 }
 
+let wantReload = false, reloaded = false
+
 /** Новая версия приложения скачалась — предлагаем перезапуститься */
 export function UpdateBanner() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null)
   useEffect(() => {
     if (!swOk()) return
-    let reloading = false
-    const onCtrl = () => { if (!reloading) { reloading = true; location.reload() } }
+    // перезагружаемся только после нажатия «Обновить»: при первой установке сервис-воркер тоже меняет controller (clients.claim)
+    const onCtrl = () => { if (wantReload && !reloaded) { reloaded = true; location.reload() } }
     navigator.serviceWorker.addEventListener('controllerchange', onCtrl)
     navigator.serviceWorker.getRegistration().catch(() => undefined).then(reg => {
       if (!reg) return
@@ -90,7 +92,7 @@ export function UpdateBanner() {
       <div className="w-full max-w-md flex items-center gap-3 rounded-2xl bg-surface-3 p-2.5 pl-4 shadow-2xl shadow-black/50">
         <Sparkles className="size-5 text-accent shrink-0" />
         <span className="flex-1 text-sm font-medium">Доступна новая версия</span>
-        <button onClick={() => waiting.postMessage('skip-waiting')} className="press h-9 px-4 rounded-xl bg-accent text-accent-ink text-sm font-semibold">Обновить</button>
+        <button onClick={() => { wantReload = true; waiting.postMessage('skip-waiting') }} className="press h-9 px-4 rounded-xl bg-accent text-accent-ink text-sm font-semibold">Обновить</button>
       </div>
     </div>
   )
