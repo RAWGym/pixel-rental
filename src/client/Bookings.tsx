@@ -66,7 +66,7 @@ export function BookingsScreen() {
   }
   if (!me) return <div className="py-6"><LoginCard /></div>
   return (
-    <div className="flex flex-col gap-4 pb-8 max-w-2xl">
+    <div className="flex flex-col gap-4 pb-8">
       <h1 className="font-display text-2xl font-semibold">Мои брони</h1>
       {last && (
         <button onClick={repeatLast} className="press flex items-center gap-3 rounded-2xl bg-surface p-3.5 text-left">
@@ -76,7 +76,7 @@ export function BookingsScreen() {
         </button>
       )}
       <Segmented layoutId="bk-tab" value={tab} onChange={setTab} options={[{ value: 'active', label: `Активные · ${mine.filter(b => ['new', 'confirmed', 'issued'].includes(b.status)).length}` }, { value: 'past', label: 'История' }]} />
-      {list.length ? <div className="flex flex-col gap-3">{list.map((b, i) => <BookingCard key={b.id} b={b} i={i} />)}</div>
+      {list.length ? <div className="grid gap-3 lg:grid-cols-2 wide:grid-cols-3">{list.map((b, i) => <BookingCard key={b.id} b={b} i={i} />)}</div>
         : <Empty icon={<CalendarCheck className="size-7" />} title={tab === 'active' ? 'Активных броней нет' : 'История пуста'} text="Соберите комплект и выберите даты, бронь появится здесь." action={<Button onClick={() => navTab('catalog')}>В каталог</Button>} />}
     </div>
   )
@@ -105,12 +105,12 @@ export function BookingDetail() {
     toast('Тот же комплект на завтра, проверьте даты'); tab('cart')
   }
   return (
-    <div className="flex flex-col gap-5 pb-10 max-w-2xl">
-      <div className="flex items-center gap-3"><IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn>
+    <div className="grid gap-5 pb-10 desk:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] desk:gap-6 items-start">
+      <div className="desk:col-span-2 flex items-center gap-3"><IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn>
         <div className="flex-1"><div className="tnum text-xl font-semibold">{b.code}</div><div className="text-xs text-muted">создана {dShort(b.createdAt)}</div></div><Badge tone={st.tone}>{st.label}</Badge></div>
 
       {b.status !== 'cancelled' && (
-        <div className="rounded-2xl bg-surface p-4">
+        <div className="desk:col-span-2 rounded-2xl bg-surface p-4">
           <div className="flex items-center">
             {FLOW.map((s, i) => (
               <div key={s} className="flex items-center flex-1 last:flex-none">
@@ -123,12 +123,16 @@ export function BookingDetail() {
         </div>
       )}
 
+      <div className="flex flex-col gap-5 min-w-0">
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-surface p-4"><div className="label mb-1">Получение</div><div className="font-semibold">{wd(b.start)}, {dShort(b.start)}</div><div className="tnum text-sm text-muted">{hm(b.start)}</div></div>
         <div className="rounded-2xl bg-surface p-4"><div className="label mb-1">Возврат</div><div className="font-semibold">{wd(b.end)}, {dShort(b.end)}</div><div className="tnum text-sm text-muted">{hm(b.end)}</div></div>
       </div>
       <div className="rounded-2xl bg-surface p-4 flex gap-3 text-sm"><MapPin className="size-4 text-accent mt-0.5 shrink-0" /><div>{b.deliveryType === 'delivery' ? <>Доставка: <b>{b.address}</b></> : <><b>{point.address}</b><div className="text-muted">{point.hours}</div></>}</div></div>
 
+      {b.contract?.status === 'signed' && <ContractCard c={b.contract} />}
+      </div>
+      <div className="flex flex-col gap-5 min-w-0">
       <div className="rounded-2xl bg-surface divide-y divide-line">
         {b.items.map(it => { const p = products.find(p => p.id === it.productId); if (!p) return null; return (
           <div key={it.productId} className="flex items-center gap-3 p-3"><ProductArt p={p} size="sm" className="size-12 rounded-lg" /><div className="flex-1 min-w-0"><div className="font-medium text-sm truncate">{p.name}</div><div className="text-xs text-muted tnum">{it.qty} × {money(it.price)}/сут</div></div><span className="tnum text-sm">{money(it.price * it.qty * b.days)}</span></div>
@@ -141,12 +145,11 @@ export function BookingDetail() {
         </div>
       </div>
 
-      {b.contract?.status === 'signed' && <ContractCard c={b.contract} />}
-
       <div className="grid sm:grid-cols-3 gap-2">
         <Button variant="soft" onClick={repeat}><Repeat className="size-4" /> Повторить</Button>
         {(b.status === 'issued' || b.status === 'confirmed') && <Button variant="soft" onClick={() => { createLead({ type: 'callback', name: me?.name ?? '', phone: me?.phone ?? '', text: `Продлить бронь ${b.code}`, city: b.city }); toast('Запрос на продление отправлен менеджеру') }}><Clock className="size-4" /> Продлить</Button>}
         {canCancel && <Button variant="danger" onClick={() => setConfirmCancel(true)}><XIcon className="size-4" /> Отменить</Button>}
+      </div>
       </div>
 
       <Sheet open={confirmCancel} onClose={() => setConfirmCancel(false)} title="Отменить бронь?"

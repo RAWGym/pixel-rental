@@ -40,6 +40,8 @@ if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
 }
 // ярлыки PWA (?tab=catalog) — открываем нужную вкладку
 { const t = new URLSearchParams(location.search).get('tab'); if (t && ['catalog', 'cart', 'bookings', 'profile'].includes(t)) useNav.getState().tab(t as any) }
+// сайт: адреса /catalog, /product/<id> и кнопка «Назад» браузера
+if (/^https?:$/.test(location.protocol) && !isNative()) import('./lib/history').then(m => { m.openFromPath(); m.bindHistory() })
 // PWA: офлайн-кэш, только когда приложение раздаётся с настоящего сайта
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && !isNative()) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}) })

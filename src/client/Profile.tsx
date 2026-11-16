@@ -48,8 +48,10 @@ export function ProfileScreen() {
     return { count: mine.length, saved: mine.reduce((s, b) => s + b.discount, 0), days: mine.reduce((s, b) => s + b.days, 0) }
   }, [bookings, me])
   return (
-    <div className="flex flex-col gap-5 pb-10 max-w-2xl">
+    <div className="flex flex-col gap-5 pb-10">
       <h1 className="font-display text-2xl font-semibold">Профиль</h1>
+      <div className="grid gap-5 desk:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] desk:gap-6 items-start">
+      <div className="flex flex-col gap-5 min-w-0">
       {me ? (
         <div className="rounded-3xl bg-surface p-5 flex flex-col gap-4 relative overflow-hidden">
           <div className="relative flex items-center gap-4">
@@ -87,6 +89,8 @@ export function ProfileScreen() {
 
       <div><div className="label mb-2">Город</div>
         <Segmented layoutId="city-p" value={city} onChange={setCity} options={[{ value: 'almaty', label: 'Алматы' }, { value: 'astana', label: 'Астана' }]} /></div>
+      </div>
+      <div className="flex flex-col gap-5 min-w-0">
 
       <div className="rounded-2xl bg-surface divide-y divide-line overflow-hidden">
         <Row icon={<Heart className="size-4" />} label="Избранное" hint={`${favorites.length} позиций`} onClick={() => go('favorites')} />
@@ -103,6 +107,8 @@ export function ProfileScreen() {
         <Row icon={<Presentation className="size-4" />} label="Демо-сценарий" hint="Подтверждённый профиль, брони, избранное — для презентации" onClick={() => setDemoOpen(true)} />
         <Row icon={<RotateCcw className="size-4" />} label="Сбросить демо-данные" onClick={() => setResetOpen(true)} />
         {me && <Row icon={<LogOut className="size-4" />} label="Выйти" onClick={() => { logout(); toast('Вы вышли') }} />}
+      </div>
+      </div>
       </div>
       {inst.sheet}
       <Sheet open={demoOpen} onClose={() => setDemoOpen(false)} title="Демо-сценарий" footer={<Button block size="lg" onClick={() => { runDemo(); setDemoOpen(false); haptic(30); toast('Демо готово: Айдана, 3 брони, избранное и корзина'); useNav.getState().tab('home') }}><Presentation className="size-5" /> Запустить</Button>}>
@@ -158,7 +164,7 @@ export function KitBuilder() {
   const [lead, setLead] = useState({ name: me?.name ?? '', phone: me?.phone ?? '', text: '' })
 
   return (
-    <div className="flex flex-col gap-5 pb-40 md:pb-10 max-w-3xl">
+    <div className="flex flex-col gap-5 pb-40 md:pb-10">
       <div className="flex items-center gap-3"><IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn><div><h1 className="font-display text-2xl font-semibold">Собрать комплект</h1><p className="text-sm text-muted">Выберите задачу, уберите лишнее, добавьте одним касанием</p></div></div>
       <DateBar />
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -216,8 +222,8 @@ export function Contacts() {
   const [q, setQ] = useState({ name: me?.name ?? '', phone: me?.phone ?? '', text: '' })
   const h = new Date().getHours()
   return (
-    <div className="flex flex-col gap-5 pb-10 max-w-2xl">
-      <div className="flex items-center gap-3"><IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn><h1 className="font-display text-2xl font-semibold">Контакты</h1></div>
+    <div className="grid gap-5 pb-10 md:grid-cols-2 items-start">
+      <div className="md:col-span-2 flex items-center gap-3"><IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn><h1 className="font-display text-2xl font-semibold">Контакты</h1></div>
       {(['almaty', 'astana'] as const).map(c => {
         const p = settings.points[c]
         const open = p.close === 24 || (h >= p.open && h < p.close)
@@ -236,7 +242,7 @@ export function Contacts() {
           </div>
         )
       })}
-      <div className="rounded-2xl bg-surface p-4 flex flex-col gap-3">
+      <div className="md:col-span-2 rounded-2xl bg-surface p-4 flex flex-col gap-3">
         <div className="font-display font-semibold">Задать вопрос</div>
         <textarea id="q-text" rows={3} className="field resize-none" value={q.text} onChange={e => setQ({ ...q, text: e.target.value })} placeholder="Ваш вопрос" />
         <div className="grid grid-cols-2 gap-2"><input id="q-name" className="field" value={q.name} onChange={e => setQ({ ...q, name: e.target.value })} placeholder="Имя" /><input id="q-phone" className="field tnum" value={q.phone} onChange={e => setQ({ ...q, phone: e.target.value })} placeholder="Телефон" /></div>
@@ -260,7 +266,7 @@ export function Terms() {
     ['Можно отменить или перенести?', 'Да, прямо в приложении в разделе «Брони», пока техника не выдана. Если оплатили, вернём деньги.'],
   ]
   return (
-    <div className="flex flex-col gap-4 pb-10 max-w-2xl">
+    <div className="flex flex-col gap-4 pb-10">
       <div className="flex items-center gap-3"><IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn><h1 className="font-display text-2xl font-semibold">Условия и FAQ</h1></div>
       <div className="rounded-2xl bg-surface divide-y divide-line overflow-hidden">
         {faq.map(([q, a], i) => (

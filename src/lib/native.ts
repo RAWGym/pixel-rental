@@ -9,3 +9,5 @@ export function postNative(m: Msg) {
 
 /** Стек открытых шторок: аппаратная «назад» на Android сначала закрывает их */
 export const sheetStack: (() => void)[] = []
+/** открытие/закрытие шторок — для истории браузера (кнопка «Назад» закрывает шторку) */
+export const sheetListeners = new Set<(open: boolean) => void>()

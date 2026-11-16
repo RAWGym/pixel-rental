@@ -68,7 +68,7 @@ export function SceneScreen() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-5 pb-40 desk:pb-10">
+    <div className="flex flex-col gap-5 pb-40 desk:pb-10">
       <div className="flex items-center gap-3">
         <IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn>
         <div className="flex-1" />
@@ -164,7 +164,7 @@ export function CompareScreen() {
   )
 
   return (
-    <div className="flex flex-col gap-4 pb-10 max-w-4xl mx-auto w-full">
+    <div className="flex flex-col gap-4 pb-10 w-full">
       <div className="flex items-center gap-3">
         <IconBtn label="Назад" onClick={back}><ChevronLeft className="size-5" /></IconBtn>
         <h1 className="text-xl font-semibold flex-1">Сравнение</h1>

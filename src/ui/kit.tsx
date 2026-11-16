@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import { Camera, Aperture, Lightbulb, Mic, Orbit, BatteryCharging, MemoryStick, Grip, Monitor, Boxes, Package, CircleDot, Triangle, Cable, X, Minus, Plus } from 'lucide-react'
 import type { CategoryId, Product } from '../data/types'
 import { create } from 'zustand'
-import { isNative, postNative, sheetStack } from '../lib/native'
+import { isNative, postNative, sheetStack, sheetListeners } from '../lib/native'
 import { photoFor } from '../data/photos'
 import { LOGO_W, LOGO_H, PIXEL_X, RENTAL_D, PIXEL_D } from './logoPaths'
 
@@ -178,9 +178,9 @@ export function Sheet({ open, onClose, title, children, footer, wide }: { open: 
     if (!open) return
     const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     const close = () => onClose()
-    sheetStack.push(close)
+    sheetStack.push(close); sheetListeners.forEach(f => f(true))
     window.addEventListener('keydown', k); document.body.style.overflow = 'hidden'
-    return () => { window.removeEventListener('keydown', k); document.body.style.overflow = ''; const i = sheetStack.lastIndexOf(close); if (i >= 0) sheetStack.splice(i, 1) }
+    return () => { window.removeEventListener('keydown', k); document.body.style.overflow = ''; const i = sheetStack.lastIndexOf(close); if (i >= 0) { sheetStack.splice(i, 1); sheetListeners.forEach(f => f(false)) } }
   }, [open])
   return (
     <AnimatePresence>

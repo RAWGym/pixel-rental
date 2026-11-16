@@ -142,20 +142,23 @@ export function ProductScreen() {
   const pr = calcPrice([{ price: p.price, qty: n }], days, settings)
   const nt = nextTier(days, settings)
   const fav = favorites.includes(p.id)
-  const canAdd = a.free > qty
+  // даты выбираются в корзине: добавить можно всегда, если техника есть в городе
+  const canAdd = a.total > qty
+  const busyOnDates = a.total > 0 && a.free <= qty
+  const example = (d: number) => calcPrice([{ price: p.price, qty: n }], d, settings)
   const inc = includesOf(p)
   const depositApplies = settings.depositForNew && !me?.verified
-  const add = () => { addToCart(p.id, Math.max(1, Math.min(want, a.free - qty))); haptic(); toast('Добавлено в корзину', { action: { label: 'Корзина', fn: () => tab('cart') } }) }
+  const add = () => { addToCart(p.id, Math.max(1, Math.min(want, a.total - qty))); haptic(); toast('Добавлено в корзину', { action: { label: 'Корзина', fn: () => tab('cart') } }) }
 
   const share = async () => {
     const text = `${p.name} — ${money(p.price)}/сутки в Pixel Rental`
     try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Скопировано') } } catch { /* отменили */ }
   }
-  const availText = a.total === 0 ? 'Нет в этом городе' : a.free > 0 ? `Свободно ${a.free} из ${a.total}` : a.next ? `Занято до ${dShort(a.next)}` : 'Занято на эти даты'
+  const availText = a.total === 0 ? 'Нет в этом городе' : a.free > 0 ? `В наличии ${a.total} шт` : a.next ? `На ваши даты занято, свободно с ${dShort(a.next)}` : 'На ваши даты занято'
   const availTone = a.total === 0 ? 'bg-faint' : a.free === 0 ? 'bg-bad' : a.free === 1 ? 'bg-warn' : 'bg-ok'
 
   const action = qty > 0
-    ? <div className="flex gap-2 w-full"><Stepper value={qty} max={a.free} onChange={v => setQty(p.id, v)} /><Button block size="lg" onClick={() => tab('cart')}>В корзине · перейти</Button></div>
+    ? <div className="flex gap-2 w-full"><Stepper value={qty} max={a.total} onChange={v => setQty(p.id, v)} /><Button block size="lg" onClick={() => tab('cart')}>В корзине · перейти</Button></div>
     : canAdd ? <Button block size="lg" onClick={add}>В корзину</Button>
       : <Button block size="lg" variant="soft" onClick={() => setWait(true)}><Bell className="size-5" /> Сообщить, когда освободится</Button>
 
@@ -199,21 +202,16 @@ export function ProductScreen() {
             ))}
           </div>
 
-          {/* калькулятор */}
+          {/* цена: справка; даты, итог и проверка занятости в корзине */}
           <div className="rounded-2xl bg-surface p-4 flex flex-col gap-3">
-            <div className="font-semibold">Стоимость на ваши даты</div>
-            <DateBar className="bg-surface-2" />
-            {!qty && <div className="flex items-center justify-between gap-3"><span className="text-sm text-muted">Количество</span><Stepper size="sm" value={want} min={1} max={Math.max(1, a.free)} onChange={setWant} /></div>}
-            <div className="flex flex-col gap-1.5 text-sm">
-              <div className="flex justify-between gap-3"><span className="text-muted">{money(p.price)} × {n} шт × {daysWord(days)}</span><span className="tnum">{money(pr.subtotal)}</span></div>
-              {pr.discount > 0 && <div className="flex justify-between gap-3 text-ok"><span>Скидка за срок {pr.percent}%</span><span className="tnum">−{money(pr.discount)}</span></div>}
-              <div className="flex justify-between gap-3 text-base font-semibold pt-2 mt-1 border-t border-line"><span>Итого</span><span className="tnum">{money(pr.total)}</span></div>
-              {p.deposit > 0 && (
-                <div className="flex justify-between gap-3 text-muted"><span className="flex items-center gap-1.5"><ShieldCheck className="size-3.5" />Залог{depositApplies ? '' : ' (не нужен)'}</span><span className={cx('tnum', !depositApplies && 'line-through')}>{money(p.deposit * n)}</span></div>
-              )}
-            </div>
-            {nt && <div className="text-xs text-muted">Возьмите на {daysWord(nt.days)}, и скидка составит {nt.percent}%</div>}
-            {p.deposit > 0 && depositApplies && <div className="text-xs text-faint">Залог берём с новых клиентов и возвращаем сразу после сдачи техники.</div>}
+            {!qty && a.total > 1 && <div className="flex items-center justify-between gap-3"><span className="text-sm text-muted">Количество</span><Stepper size="sm" value={want} min={1} max={a.total} onChange={setWant} /></div>}
+            <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-sm">
+              {[1, 3, 7].map(d => { const x = example(d); return (
+                <div key={d} className="contents"><dt className="text-muted">{daysWord(d)}{n > 1 ? ` · ${n} шт` : ''}{x.percent ? <span className="text-ok"> · −{x.percent}%</span> : null}</dt><dd className="tnum text-right font-medium">{money(x.total)}</dd></div>
+              ) })}
+            </dl>
+            {busyOnDates && <div className="text-sm text-warn">На {dShort(range.start)}-{dShort(range.end)} всё занято. В корзине можно выбрать другие даты.</div>}
+            <button onClick={() => tab('cart')} className="self-start text-sm text-accent font-medium">Даты и итог в корзине</button>
             <div className="hidden desk:block pt-1">{action}</div>
           </div>
 
@@ -266,10 +264,10 @@ export function ProductScreen() {
       <div className="desk:hidden fixed left-0 right-0 z-40 gutter pb-2" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="flex items-center gap-3 bg-surface-3 rounded-2xl p-2 pl-4 shadow-xl shadow-black/50">
           <div className="flex-1 min-w-0">
-            <div className="tnum font-semibold whitespace-nowrap">{money(pr.total)}</div>
-            <div className="text-xs text-muted truncate">за {daysWord(days)}{pr.discount ? `, −${pr.percent}%` : ''}</div>
+            <div className="tnum font-semibold whitespace-nowrap">{money(p.price)}</div>
+            <div className="text-xs text-muted truncate">за сутки</div>
           </div>
-          {qty > 0 ? <><Stepper value={qty} max={a.free} onChange={v => setQty(p.id, v)} /><Button className="h-11" onClick={() => tab('cart')}>Корзина</Button></>
+          {qty > 0 ? <><Stepper value={qty} max={a.total} onChange={v => setQty(p.id, v)} /><Button className="h-11" onClick={() => tab('cart')}>Корзина</Button></>
             : canAdd ? <Button className="h-11 px-5" onClick={add}>В корзину</Button>
               : <Button variant="soft" className="h-11" onClick={() => setWait(true)}><Bell className="size-4" /> Жду</Button>}
         </div>
